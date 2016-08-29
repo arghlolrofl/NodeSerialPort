@@ -5,10 +5,45 @@
     xmlns:local="using:TestSuite"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d" Width="614.977">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Button x:Name="m_Button" Margin="45,39,0,642" Width="148" Height="87" Click="Button_Click" Content="Get Serial Ports"/>
-        <TextBox Name="m_Textbox" Margin="8,165,12,10" Text="" TextWrapping="Wrap" AcceptsReturn="True" Height="Auto" Width="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="0,0,10,0">
+        <ComboBox x:Name="m_ComboboxPorts" HorizontalAlignment="Left" Margin="138,10,0,0" VerticalAlignment="Top" Width="215" SelectionChanged="m_ComboboxPorts_SelectionChanged"/>
+        <Button x:Name="m_ButtonOpen" Content="Open" HorizontalAlignment="Left" Margin="358,10,0,0" VerticalAlignment="Top" Width="108" IsEnabled="False" Click="m_ButtonOpen_Click"/>
+        <Button x:Name="m_ButtonClose" Content="Close" HorizontalAlignment="Left" Margin="471,9,0,0" VerticalAlignment="Top" Width="108" IsEnabled="False" Click="m_ButtonClose_Click"/>
+        <TextBox x:Name="m_TextPort" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Port" VerticalAlignment="Top" Width="123" BorderThickness="0"/>
+        <Grid HorizontalAlignment="Left" Height="481" Margin="11,149,0,0" VerticalAlignment="Top" Width="584">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="70*"/>
+                <RowDefinition Height="30*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50*"/>
+                <ColumnDefinition Width="50*"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="0" Grid.Column="0">
+                <RichTextBlock x:Name="m_TextBlockSent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap">
+                    <Paragraph>
+                        <Run Text="Outgoing" FontWeight="Bold"/>
+                    </Paragraph>
+                </RichTextBlock>
+            </ScrollViewer>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="0" Grid.Column="1">
+                <RichTextBlock x:Name="m_TextBlockReceived" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" >
+                    <Paragraph>
+                        <Run Text="Incoming" FontWeight="Bold"/>
+                    </Paragraph>
+                </RichTextBlock>
+            </ScrollViewer>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" >
+                <RichTextBlock x:Name="m_TextblockLog" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap">
+                    <Paragraph>
+                        <Run Text="Log" FontWeight="Bold"/>
+                    </Paragraph>
+                </RichTextBlock>
+            </ScrollViewer>
+        </Grid>
+        <Button x:Name="m_ButtonSendConnect" Content="Send Connect Message" HorizontalAlignment="Left" Margin="11,69,0,0" VerticalAlignment="Top" Width="192" Click="m_sendConnect_Click" IsEnabled="False"/>
+        <Button x:Name="m_ButtonSendDisconnect" Content="Send DisconnectMessage" HorizontalAlignment="Left" Margin="11,111,0,0" VerticalAlignment="Top" Width="192" Click="m_sendDisconnect_Click" IsEnabled="False"/>
     </Grid>
 </Page>
