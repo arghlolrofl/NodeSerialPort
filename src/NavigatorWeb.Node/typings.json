@@ -1,0 +1,22 @@
+{
+  "globalDependencies": {
+    "cookie-parser": "registry:dt/cookie-parser#1.3.4+20160316155526",
+    "core-js": "registry:dt/core-js#0.0.0+20160725163759",
+    "express-serve-static-core": "registry:dt/express-serve-static-core#4.0.0+20160829034835",
+    "morgan": "registry:dt/morgan#1.7.0+20160524142355",
+    "node": "registry:dt/node#6.0.0+20160826120425",
+    "reflect-metadata": "registry:dt/reflect-metadata#0.0.0+20160630155503",
+    "serve-favicon": "registry:dt/serve-favicon#0.0.0+20160316155526",
+    "serve-static": "registry:dt/serve-static#0.0.0+20160606155157",
+    "socket.io": "registry:dt/socket.io#1.4.4+20160317120654",
+    "systemjs": "registry:dt/systemjs#0.19.29+20160702105636",
+    "ws": "registry:dt/ws#0.0.0+20160724122153"
+  },
+  "dependencies": {
+    "body-parser": "registry:npm/body-parser#1.15.2+20160815132839",
+    "debug": "registry:npm/debug#2.0.0+20160723033700",
+    "del": "registry:npm/del#2.2.0+20160416211512",
+    "express": "registry:npm/express#4.14.0+20160815112707",
+    "mime": "registry:npm/mime#1.3.0+20160723033700"
+  }
+}

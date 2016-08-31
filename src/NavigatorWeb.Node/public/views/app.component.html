@@ -1,0 +1,24 @@
+﻿<div class="row">
+    <div class="col-lg-6 col-sm-12" id="scale-image-container">
+        <div id="scale-image">
+        </div>
+
+        <label class="scale-weight-display">{{displayedWeightUpdate}}</label>
+    </div>
+
+    <br />
+
+    <div class="col-lg-6 col-sm-12">
+        <div id="weight-status" class="status" style="display: none;">
+            <strong id="weight-status-message" class="message">Weight has been updated!</strong>
+        </div>
+
+        <br />
+
+        <!--<strong>Last weight:&nbsp;</strong>{{weightString}}-->
+        <p><strong>Weight History:</strong></p>
+        <ul>
+            <li *ngFor="let weight of weightHistory">{{weight}}</li>
+        </ul>
+    </div>
+</div>
