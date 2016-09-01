@@ -63,7 +63,6 @@
     <Content Include="public\lib\Reflect.js.map" />
     <Content Include="public\lib\shim.min.js.map" />
     <Content Include="public\views\app.component.html" />
-    <Content Include="README.md" />
     <Content Include="src\app\tsconfig.json" />
     <Content Include="src\node\tsconfig.json" />
     <Content Include="typings.json" />

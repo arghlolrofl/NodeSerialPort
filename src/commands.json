@@ -1,0 +1,10 @@
+{
+  "commands": {
+    "Deploy": {
+      "fileName": "powershell.exe",
+      "workingDirectory": ".",
+      "arguments": "-ExecutionPolicy Bypass -NonInteractive -File Scripts\\mirror-folder.ps1 -Source \"./NavigatorWeb.Node/bin/ARM/Debug/AppX/\" -Dest \"W:/\""
+    }
+  },
+  "-vs-binding": { "AfterBuild": [ "Deploy" ] }
+}
