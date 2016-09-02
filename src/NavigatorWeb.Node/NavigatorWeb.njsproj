@@ -64,6 +64,8 @@
     <Content Include="public\lib\shim.min.js.map" />
     <Content Include="public\views\app.component.html" />
     <Content Include="src\app\tsconfig.json" />
+    <Content Include="src\common\messages.json" />
+    <Content Include="src\node\serial\node.serial.link.ts" />
     <Content Include="src\node\tsconfig.json" />
     <Content Include="typings.json" />
   </ItemGroup>
@@ -72,6 +74,8 @@
     <Folder Include="bin\" />
     <Folder Include="public\views\" />
     <Folder Include="src\app\services\repository\" />
+    <Folder Include="src\common\" />
+    <Folder Include="src\node\serial\" />
     <Folder Include="src\node\websockets\" />
     <Folder Include="src\node\routes\" />
     <Folder Include="src\" />

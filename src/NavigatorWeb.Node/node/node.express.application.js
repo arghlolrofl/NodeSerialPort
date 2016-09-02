@@ -1,29 +1,39 @@
 /// <reference path="../../typings/index.d.ts" />
 "use strict";
-var express = require('express');
 var fs = require('fs');
 var morgan = require('morgan');
 var node_environment_1 = require('./node.environment');
-var node_config_1 = require('./node.config');
 var node_express_router_1 = require('./node.express.router');
 var node_websocket_client_1 = require('./websockets/node.websocket.client');
 var node_websocket_server_1 = require('./websockets/node.websocket.server');
+var node_serial_link_1 = require('./serial/node.serial.link');
 var NodeExpressApplication = (function () {
     function NodeExpressApplication(logger) {
         this.logger = logger;
-        this.logger.info("Instantiating NodeExpressApplication ...");
     }
     NodeExpressApplication.prototype.Create = function () {
-        this.logger.info("Creating Node Express application ...");
-        var cfg = new node_config_1.ConfigurationService();
-        this.app = express();
-        this.InitializeExpressLogger();
-        this.SetEnvironment();
-        this.ConfigureRoutes();
-        this.app.set('port', cfg.WebServerConfiguration.PORT);
-        this.InitializeWebSocketClient();
-        this.InitializeWebSocketServer();
+        //this.logger.info("Creating Node Express application ...");
+        this.InitializeSerialLink();
+        //let cfg = new ConfigurationService();
+        //this.app = express();
+        //this.InitializeExpressLogger();
+        //this.SetEnvironment();
+        //this.ConfigureRoutes();
+        //this.app.set('port', cfg.WebServerConfiguration.PORT);
+        //this.InitializeWebSocketClient();
+        //this.InitializeWebSocketServer();
         return this.app;
+    };
+    NodeExpressApplication.prototype.InitializeSerialLink = function () {
+        this.serialLink = new node_serial_link_1.SerialLink("COM7", 9600);
+        //this.serialLink.ListAvailablePorts();
+        this.serialLink.Open();
+        //setTimeout(this.serialLink.Connect, 3000);
+        //setTimeout(() => {
+        //    console.info(this.serialLink.GetResponse());
+        //}, 6000);
+        //this.serialLink.Disconnect();
+        //this.serialLink.Close();
     };
     NodeExpressApplication.prototype.InitializeWebSocketClient = function () {
         this.wsClient = new node_websocket_client_1.NodeWebSocketClient();

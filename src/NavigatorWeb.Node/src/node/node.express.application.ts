@@ -9,37 +9,52 @@ import { ConfigurationService } from './node.config';
 import { NodeExpressRouter } from './node.express.router';
 import { NodeWebSocketClient } from './websockets/node.websocket.client';
 import { NodeWebSocketServer } from './websockets/node.websocket.server';
+import { SerialLink } from './serial/node.serial.link';
 
 export class NodeExpressApplication {
     private app: express.Application;
     private logger: any;
     private wsClient: NodeWebSocketClient;
     private wsServer: NodeWebSocketServer;
+    private serialLink: SerialLink;
 
     public environment: Environment;
 
     constructor(logger: any) {
         this.logger = logger;
-        this.logger.info("Instantiating NodeExpressApplication ...");
     }
 
     public Create(): express.Application {
-        this.logger.info("Creating Node Express application ...");
+        //this.logger.info("Creating Node Express application ...");
 
-        let cfg = new ConfigurationService();
-        
-        this.app = express();
+        this.InitializeSerialLink();
 
-        this.InitializeExpressLogger();
-        this.SetEnvironment();
-        this.ConfigureRoutes();
+        //let cfg = new ConfigurationService();
 
-        this.app.set('port', cfg.WebServerConfiguration.PORT);
+        //this.app = express();
 
-        this.InitializeWebSocketClient();
-        this.InitializeWebSocketServer();
-        
+        //this.InitializeExpressLogger();
+        //this.SetEnvironment();
+        //this.ConfigureRoutes();
+
+        //this.app.set('port', cfg.WebServerConfiguration.PORT);
+
+        //this.InitializeWebSocketClient();
+        //this.InitializeWebSocketServer();
+
         return this.app;
+    }
+
+    private InitializeSerialLink(): void {
+        this.serialLink = new SerialLink("COM7", 9600);
+        //this.serialLink.ListAvailablePorts();
+        this.serialLink.Open();
+        //setTimeout(this.serialLink.Connect, 3000);
+        //setTimeout(() => {
+        //    console.info(this.serialLink.GetResponse());
+        //}, 6000);
+        //this.serialLink.Disconnect();
+        //this.serialLink.Close();
     }
 
     private InitializeWebSocketClient(): void {
