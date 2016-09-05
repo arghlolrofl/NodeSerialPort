@@ -44,6 +44,8 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="lib\jasmine_examples\Player.js" />
+    <Compile Include="lib\jasmine_examples\Song.js" />
     <Compile Include="public\lib\jquery-v3.1.0.min.js" />
     <Compile Include="public\lib\Reflect.js" />
     <Compile Include="public\lib\shim.min.js" />
@@ -51,6 +53,9 @@
     <Compile Include="public\lib\system.src.js" />
     <Compile Include="public\lib\zone.js" />
     <Compile Include="public\systemjs.config.js" />
+    <Compile Include="spec\helpers\jasmine_examples\SpecHelper.js" />
+    <Compile Include="spec\jasmine_examples\PlayerSpec.js" />
+    <Compile Include="spec\node\serial\MessageAggregatorSpec.js" />
     <Compile Include="src\node\routes\thing.route.collection.ts" />
     <Compile Include="gulpfile.js" />
     <Compile Include="bin\www" />
@@ -63,8 +68,10 @@
     <Content Include="public\lib\Reflect.js.map" />
     <Content Include="public\lib\shim.min.js.map" />
     <Content Include="public\views\app.component.html" />
+    <Content Include="spec\support\jasmine.json" />
     <Content Include="src\app\tsconfig.json" />
     <Content Include="src\common\messages.json" />
+    <Content Include="src\node\serial\MessageAggregator.ts" />
     <Content Include="src\node\serial\node.serial.link.ts" />
     <Content Include="src\node\tsconfig.json" />
     <Content Include="typings.json" />
@@ -72,7 +79,16 @@
   <ItemGroup>
     <Folder Include="assets\" />
     <Folder Include="bin\" />
+    <Folder Include="lib\" />
+    <Folder Include="lib\jasmine_examples\" />
     <Folder Include="public\views\" />
+    <Folder Include="spec\" />
+    <Folder Include="spec\helpers\" />
+    <Folder Include="spec\helpers\jasmine_examples\" />
+    <Folder Include="spec\jasmine_examples\" />
+    <Folder Include="spec\node\" />
+    <Folder Include="spec\node\serial\" />
+    <Folder Include="spec\support\" />
     <Folder Include="src\app\services\repository\" />
     <Folder Include="src\common\" />
     <Folder Include="src\node\serial\" />

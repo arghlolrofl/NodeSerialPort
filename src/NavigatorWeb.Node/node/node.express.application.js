@@ -13,7 +13,7 @@ var NodeExpressApplication = (function () {
     }
     NodeExpressApplication.prototype.Create = function () {
         //this.logger.info("Creating Node Express application ...");
-        this.InitializeSerialLink();
+        //this.InitializeSerialLink();
         //let cfg = new ConfigurationService();
         //this.app = express();
         //this.InitializeExpressLogger();
@@ -25,15 +25,16 @@ var NodeExpressApplication = (function () {
         return this.app;
     };
     NodeExpressApplication.prototype.InitializeSerialLink = function () {
-        this.serialLink = new node_serial_link_1.SerialLink("COM7", 9600);
-        //this.serialLink.ListAvailablePorts();
+        this.serialLink = new node_serial_link_1.SerialLink("COM7", 115200);
         this.serialLink.Open();
-        //setTimeout(this.serialLink.Connect, 3000);
-        //setTimeout(() => {
-        //    console.info(this.serialLink.GetResponse());
-        //}, 6000);
-        //this.serialLink.Disconnect();
-        //this.serialLink.Close();
+        setTimeout(this.serialLink.ConnectToDevice.bind(this.serialLink), 1000);
+        setTimeout(this.TestLink.bind(this), 5000);
+        setTimeout(this.serialLink.DisconnectFromDevice.bind(this.serialLink), 7000);
+        setTimeout(this.serialLink.Close.bind(this.serialLink), 10000);
+    };
+    NodeExpressApplication.prototype.TestLink = function () {
+        console.log("LAST MESSAGE RECEIVED:");
+        console.info(this.serialLink.GetLastResponse());
     };
     NodeExpressApplication.prototype.InitializeWebSocketClient = function () {
         this.wsClient = new node_websocket_client_1.NodeWebSocketClient();

@@ -3,9 +3,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export class SerialLink {
-    private m_Messages: any;
+    private READ_BUFFER_SIZE: number = 65536;
+
     private m_SerialPort: SerialPort;
-    private m_lastResponse: any;
+    private m_Messages: any;
+    private m_LastMessageReceived: any;
 
 
     constructor(portName: string, baudRate: number) {
@@ -17,79 +19,83 @@ export class SerialLink {
 
         this.m_Messages = jsonObject;
 
-        this.m_SerialPort = new SerialPort(portName, { baudRate: 9600, autoOpen: false });
+        this.m_SerialPort = new SerialPort(portName, {
+            baudRate: baudRate,
+            parity: "odd",
+            bufferSize: this.READ_BUFFER_SIZE,
+            autoOpen: false
+        });
 
-        console.log("SerialLink created ...");
+        console.log("SerialLink initialized ...");
     }
 
     public Open(): void {
-        //this.m_SerialPort.open(this.SerialPort_OnOpen.bind(this));
-        console.log("Opening serial link ...");
+        this.m_SerialPort.open(this.SerialPort_OnOpen.bind(this));
+    }
 
-        let self = this;
+    public ConnectToDevice(): void {
+        let buffer = new Buffer(this.m_Messages["connect"]);
+        this.m_SerialPort.write(buffer);
 
-        this.m_SerialPort.open(function () {
-            self.m_SerialPort.on("data", function (data: any) {
-                console.info(data);
-            });
+        console.log("Written to serial port: connect");
+        console.info(buffer);
+    }
 
-            let buffer = new Buffer(self.m_Messages["connect"]);
-            self.m_SerialPort.write(buffer, function (err: any, written: number) {
-                self.m_SerialPort.drain(function () {
-                    console.log("Written to serial port: ");
-                    console.info(buffer);
-                });
-            });
-            
-        });
+    public GetLastResponse(): any {
+        return this.m_LastMessageReceived;
+    }
+
+    public DisconnectFromDevice(): void {
+        let buffer = new Buffer(this.m_Messages["disconnect"]);
+        this.m_SerialPort.write(buffer);
+
+        console.log("Written to serial port: disconnect");
+        console.info(buffer);
     }
 
     public Close(): void {
         this.m_SerialPort.close();
+
         console.log("SerialLink closed ...");
     }
 
-    public Connect(): void {
-        let buffer = new Buffer(this.m_Messages["connect"]);
-        this.m_SerialPort.write(buffer);
-
-        console.log("Written to serial port: ");
-        console.info(buffer);
-    }
-
-    public Disconnect(): void {
-        let buffer = new Buffer(this.m_Messages["disconnect"]);
-        this.m_SerialPort.write(buffer);
-
-        console.log("Written to serial port: ");
-        console.info(buffer);
-    }
-
-    public GetResponse(): any {
-        return this.m_lastResponse;
-    }
-
     private SerialPort_OnOpen(): void {
-        console.log("SerialLink connection opened ...");
-
         this.m_SerialPort.on("data", this.SerialPort_OnDataReceived.bind(this));
+        this.m_SerialPort.on("close", this.SerialPort_OnClosed.bind(this));
+        this.m_SerialPort.on("disconnect", this.SerialPort_OnDisconnected.bind(this));
         this.m_SerialPort.on("error", this.SerialPort_OnError.bind(this));
 
-        this.Connect();
+        console.log("Registered Callbacks!");
+    }
+
+    private SerialPort_OnDataReceived(data: Buffer) {
+        let messageId = data.readUInt16BE(0);
+        let messageSize = data.readUInt32BE(2);
+        let payload = data.slice(6);
+
+        console.log();
+        console.log(" >      Id: " + messageId);
+        console.log(" >    Size: " + messageSize);
+        console.log(" > Buffer: (" + data.byteLength + " Bytes)");
+        console.info(data);
+        console.log(" > Payload: (" + payload.byteLength + " Bytes)");
+        console.info(payload);
+
+        this.m_LastMessageReceived = data;
+    }
+
+    private SerialPort_OnClosed(): void {
+        console.log("SerialPort_OnClosed");
+    }
+
+    private SerialPort_OnDisconnected(error: any): void {
+        console.log("SerialPort_OnDisconnected");
+        console.error(error);
     }
 
     private SerialPort_OnError(error: any): void {
-        console.log("SerialLink ERROR");
-        console.info(error);
-    }
-
-    private SerialPort_OnDataReceived(data: any) {
-        console.info(typeof data);
-        console.info(data);
-
-        this.m_lastResponse = data;
-
-        this.Disconnect();
+        console.log("SerialPort_OnError");
+        console.error(error);
     }
 
     public ListAvailablePorts(): void {
