@@ -4,7 +4,7 @@ import { Component, OnInit, ChangeDetectorRef } from "@angular/core";
 
 import { Thing } from "./models/thing.entity";
 import { ThingRepositoryService } from "./services/thing.repository.service";
-import { WebsocketClientService } from './services/app.websocket.client.service';
+import { WebsocketClientService } from "./services/app.websocket.client.service";
 
 declare var Waves: any;
 declare var $: any;
@@ -47,13 +47,13 @@ export class AppComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        //this.thingRepository
+        // this.thingRepository
         //    .getAll()
         //    .subscribe((data: Thing[]) => this.things = data);
 
         console.log("Initializing waves ...");
 
-        Waves.attach(document.getElementById('scale-image'), ['waves-green']);
+        Waves.attach(document.getElementById("scale-image"), ["waves-green"]);
         Waves.init();
 
         this.webSocketClientService.weightUpdated$.subscribe((data: string) => this.onWeightUpdated(data));
@@ -63,7 +63,7 @@ export class AppComponent implements OnInit {
         this.weightString = data;
         this.weightHistory.unshift(this.weightString);
 
-        Waves.ripple('.waves-effect');
+        Waves.ripple(".waves-effect");
         this.showStatusMessage();
 
         if (this.weightString.indexOf("g") >= 0) {
@@ -87,11 +87,11 @@ export class AppComponent implements OnInit {
 
             clearInterval(this.interval);
             this.displayedWeightUpdate = this.weightString;
-            Waves.calm('.waves-effect');
+            Waves.calm(".waves-effect");
 
-            //tell ng2 to detect changes: important for some mobile 
-            //browsers to update their view after a weight update, e.g.:
-            //android native browser, iPad safari browser
+            // tell ng2 to detect changes: important for some mobile 
+            // browsers to update their view after a weight update, e.g.:
+            // android native browser, iPad safari browser
             this.ref.detectChanges();
 
         } else {
@@ -100,12 +100,12 @@ export class AppComponent implements OnInit {
     }
 
     showStatusMessage(): void {
-        let element = $('#weight-status');
+        let element = $("#weight-status");
         element.fadeIn("slow");
     }
 
     hideStatusMessage(): void {
-        let element = $('#weight-status');
+        let element = $("#weight-status");
         element.fadeOut("slow");
     }
 }

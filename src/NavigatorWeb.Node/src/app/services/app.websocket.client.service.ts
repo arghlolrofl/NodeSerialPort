@@ -1,4 +1,4 @@
-﻿import { Injectable, EventEmitter } from '@angular/core';
+﻿import { Injectable, EventEmitter } from "@angular/core";
 
 declare var io: any;
 
@@ -24,7 +24,7 @@ export class WebsocketClientService {
         this.weightUpdated$ = new EventEmitter<string>();
 
         this.socket = io("http://10.34.2.57:55667");
-        this.socket.on('weightUpdate', function (data: string) {
+        this.socket.on("weightUpdate", function (data: string) {
             this.weightUpdated$.emit(data);
         }.bind(this));
     }

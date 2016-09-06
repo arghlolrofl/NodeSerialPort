@@ -1,0 +1,25 @@
+﻿{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": false,
+    "noImplicitAny": true,
+    "outDir": "./../dist",
+    "rootDir": "./"
+  },
+  "exclude": [
+    "gulpfile.js",
+    ".gitignore",
+    "tsconfig.json",
+    "node_modules",
+    "typings",
+    "assets",
+    "bin",
+    "typings/main.d.ts",
+    "typings/main"
+  ]
+}
