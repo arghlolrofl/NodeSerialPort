@@ -71,17 +71,15 @@ export class Program {
 
         this.initializeEnvironment();
 
-        //this.testSerialLink();
+        // this.testSerialLink();
 
-        //this.app = express();
-        
-        //this.configureEnvironment(Environment.DEBUG);
-        //this.configureRoutes();
+        // this.app = express();
 
-        
+        // this.configureEnvironment(Environment.DEBUG);
+        // this.configureRoutes();
 
-        //this.initializeWebSocketClient();
-        //this.initializeWebSocketServer();
+        // this.initializeWebSocketClient();
+        // this.initializeWebSocketServer();
 
         return this.express;
     }
@@ -104,7 +102,7 @@ export class Program {
     }
 
     //#region Helpers
-    
+
     /**
      * Initializes the node application with the environment that
      * has been set in the environment variable 'NODE_ENV'.

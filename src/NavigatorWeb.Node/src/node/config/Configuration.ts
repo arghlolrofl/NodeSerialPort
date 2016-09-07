@@ -1,4 +1,4 @@
-﻿export module Configuration {
+﻿export namespace Configuration {
     /**
      * WebServer configuration settings
      */
@@ -13,7 +13,7 @@
          * Static constructor
          */
         private static _constructor = (() => {
-            console.log('Static WebServer constructor');
+            console.log("Static WebServer constructor");
 
             // Adjust the port the web server is listening on here
             WebServer.port = 3000;
@@ -53,7 +53,7 @@
          * Static constructor
          */
         private static _constructor = (() => {
-            console.log('Static WebSocketClient constructor');
+            console.log("Static WebSocketClient constructor");
 
             WebSocketClient.port = 55666;
             WebSocketClient.path = "scale";
@@ -88,8 +88,8 @@
          * Static constructor
          */
         private static _constructor = (() => {
-            console.log('Static WebSocketServer constructor');
-                        
+            console.log("Static WebSocketServer constructor");
+
             WebSocketServer.port = 55667;
             WebSocketServer.host = "10.34.2.57";
         })();

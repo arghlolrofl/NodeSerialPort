@@ -1,12 +1,11 @@
 ﻿/// <reference path="../../../typings/globals/socket.io/index.d.ts" />
 
 import * as io from "socket.io";
-//import { ConfigurationService, NodeWebSocketServerConfiguration } from "../node.config";
 
 export class WebSocketServer {
     // web socket server instance
     private webSocket: SocketIO.Server;
-    // global configuration service
+    // web socket server's port
     private port: number;
 
     /**
