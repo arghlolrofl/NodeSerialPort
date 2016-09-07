@@ -11,7 +11,7 @@ export class WebSocketClient {
     // the interval/cancellation token
     private interval: NodeJS.Timer;
     // global configuration service
-    private config: any;
+    private url: string;
     // weight update event
     public messageReceived$: EventEmitter<string>;
 
@@ -22,8 +22,8 @@ export class WebSocketClient {
      * @param {callback} callback The function is going to be executed
      * when a weight update occurs.
      */
-    constructor(config: any) {
-        this.config = config;
+    constructor(url: string) {
+        this.url = url;
         this.messageReceived$ = new EventEmitter<string>();
     }
 
@@ -32,10 +32,10 @@ export class WebSocketClient {
      * and sets up all relevant callbacks.
      */
     public connect(): void {
-        console.log("[WEBSOCKET-CLIENT] Trying to connect to scale service at " + this.config.url);
+        console.log("[WEBSOCKET-CLIENT] Trying to connect to scale service at " + this.url);
 
         // establish connection
-        this.webSocket = new WebSocket(this.config.url);
+        this.webSocket = new WebSocket(this.url);
         // setup callbacks
         this.webSocket.on("open", this.WebSocket_OnOpen.bind(this));
         this.webSocket.on("message", this.WebSocket_OnMessage.bind(this));

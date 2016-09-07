@@ -1,27 +1,68 @@
 ﻿import { Environment } from "./Environment";
+import { ICanLog } from "./interfaces/IcanLog";
 
-export class Logger {
+/**
+ * Logger class
+ */
+export class Logger implements ICanLog {
     private environment: Environment;
 
     constructor(env: Environment) {
         this.environment = env;
     }
 
-    public log(msg: string) {
+    /**
+     * Default logging method.
+     *
+     * @param message Message to log
+     */
+    public log(message: string) {
         if (this.environment === Environment.DEBUG) {
-            console.log(msg);
+            console.log(message);
         }
     }
 
-    public dump(obj: any) {
+    /**
+     * Equivalent to console.info("foo message")
+     *
+     * @param message Message to log
+     */
+    public info(message: string) {
         if (this.environment === Environment.DEBUG) {
-            console.info(obj);
+            console.info(message);
         }
     }
 
-    public error(err: any) {
+    /**
+     * Equivalent to console.trace("bar message")
+     *
+     * @param message Message to log
+     */
+    public trace(message: string) {
         if (this.environment === Environment.DEBUG) {
-            console.error(err);
+            console.trace(message);
+        }
+    }
+
+    /**
+     * Equivalent to console.info(foobarObject)
+     *
+     * @param message Message to log
+     */
+    public dump(object: any) {
+        if (this.environment === Environment.DEBUG) {
+            console.info(object);
+        }
+    }
+
+    /**
+     * Equivalent to console.error(err)
+     *
+     * @param message Message to log
+     */
+    public error(error: any): void {
+        if (this.environment === Environment.DEBUG) {
+            console.error(error);
         }
     }
 }

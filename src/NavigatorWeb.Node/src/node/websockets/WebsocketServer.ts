@@ -7,13 +7,13 @@ export class WebSocketServer {
     // web socket server instance
     private webSocket: SocketIO.Server;
     // global configuration service
-    private config: any;
+    private port: number;
 
     /**
      * Instantiates a new instance of a WebSocket server.
      */
-    constructor(config: any) {
-        this.config = config;
+    constructor(port: number) {
+        this.port = port;
     }
 
     /**
@@ -26,8 +26,8 @@ export class WebSocketServer {
             console.log("[WEBSOCKET-SERVER] Client '" + socket.client.id + "' connected ...");
         });
 
-        this.webSocket.listen(this.config.port);
-        console.log("[WEBSOCKET-SERVER] Listening on port: " + this.config.port);
+        this.webSocket.listen(this.port);
+        console.log("[WEBSOCKET-SERVER] Listening on port: " + this.port);
     }
 
     /**

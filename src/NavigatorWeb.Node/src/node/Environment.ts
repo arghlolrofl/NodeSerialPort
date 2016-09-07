@@ -1,6 +1,6 @@
 ﻿export enum Environment {
     DEBUG,
-    TRACE,
+    STAGING,
     RELEASE,
     PRODUCTION
 }

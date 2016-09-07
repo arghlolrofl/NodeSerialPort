@@ -2,106 +2,102 @@
 import * as fs from "fs";
 import * as path from "path";
 
-import { Logger } from "./../Logger";
+import { ICanLog } from "./../interfaces/ICanLog";
+import { Messages } from "./../config/Messages";
 
+/**
+ * Manages the communication with a serial port.
+ */
 export class SerialLink {
-    private READ_BUFFER_SIZE: number = 65536;
+    //#region Private Members
 
-    private logger: Logger;
+    private readBufferSize: number = 65536;
     private serialPort: SerialPort;
-    private m_LastMessageReceived: any;
-    private m_Messages: any;
+    private logger: ICanLog;
 
-    constructor(portName: string, baudRate: number, logger: Logger) {
+    //#endregion
+
+    //#region Initialization
+
+    /**
+     * Creates a new instance of the SerialLink class.
+     *
+     * @param logger Logger instance uses by the main application
+     * @param portName Name of the serial port, e.g.: 'COM7'
+     * @param baudRate BaudRate for the serial port connection
+     * @param bufferSize Maximum size of the read buffer
+     */
+    constructor(
+        logger: ICanLog,
+        portName: string,
+        baudRate: number,
+        bufferSize?: number
+    ) {
         this.logger = logger;
-
         this.logger.log("Creating serial link to port '" + portName + "' with baud rate: " + baudRate);
 
-        let jsonPath = path.join(__dirname, "../../common/messages.json");
-        let jsonText: string = fs.readFileSync(jsonPath, "utf8");
-        let jsonObject = JSON.parse(jsonText);
-
-        this.m_Messages = jsonObject;
-
+        let buffSize = bufferSize || this.readBufferSize;
         this.serialPort = new SerialPort(portName, {
             baudRate: baudRate,
             parity: "odd",
-            bufferSize: this.READ_BUFFER_SIZE,
+            bufferSize: buffSize,
             autoOpen: false
         });
 
+        this.logger.info("SerialLink read buffer size: " + buffSize);
         this.logger.log("SerialLink initialized ...");
     }
 
+    //#endregion
+
+    //#region Public Methods
+
+    /**
+     * Opens the serial port connection and sets up a callback,
+     * if it was successfull.
+     */
     public Open(): void {
-        this.serialPort.open(this.SerialPort_OnOpen.bind(this));
+        this.serialPort.open(this.serialPort_OnOpen.bind(this));
     }
 
+    /**
+     * Tries to establish a connection to the device by sending
+     * a 'CONNECT'-message.
+     */
     public ConnectToDevice(): void {
-        let buffer = new Buffer(this.m_Messages["connect"]);
+        let buffer = new Buffer(Messages.CONNECT);
         this.serialPort.write(buffer);
 
         this.logger.log("Written to serial port: connect");
         this.logger.dump(buffer);
     }
 
-    public GetLastResponse(): any {
-        return this.m_LastMessageReceived;
-    }
-
+    /**
+     * Tries to shutdown a connection to the device by sending
+     * a 'DICONNECT'-message.
+     */
     public DisconnectFromDevice(): void {
-        let buffer = new Buffer(this.m_Messages["disconnect"]);
+        let buffer = new Buffer(Messages.DISCONNECT);
         this.serialPort.write(buffer);
 
         this.logger.log("Written to serial port: disconnect");
         this.logger.dump(buffer);
     }
 
+    /**
+     * Closes the the serial port connection. After closing,
+     * no more reading or writing to the serial port is possible.
+     */
     public Close(): void {
         this.serialPort.close();
 
         this.logger.log("SerialLink closed ...");
     }
 
-    private SerialPort_OnOpen(): void {
-        this.serialPort.on("data", this.SerialPort_OnDataReceived.bind(this));
-        this.serialPort.on("close", this.SerialPort_OnClosed.bind(this));
-        this.serialPort.on("disconnect", this.SerialPort_OnDisconnected.bind(this));
-        this.serialPort.on("error", this.SerialPort_OnError.bind(this));
-
-        this.logger.log("Registered Callbacks!");
-    }
-
-    private SerialPort_OnDataReceived(data: Buffer) {
-        let messageId = data.readUInt16BE(0);
-        let messageSize = data.readUInt32BE(2);
-        let payload = data.slice(6);
-
-        this.logger.log("");
-        this.logger.log(" >      Id: " + messageId);
-        this.logger.log(" >    Size: " + messageSize);
-        this.logger.log(" > Buffer: (" + data.byteLength + " Bytes)");
-        this.logger.dump(data);
-        this.logger.log(" > Payload: (" + payload.byteLength + " Bytes)");
-        this.logger.dump(payload);
-
-        this.m_LastMessageReceived = data;
-    }
-
-    private SerialPort_OnClosed(): void {
-        this.logger.log("SerialPort_OnClosed");
-    }
-
-    private SerialPort_OnDisconnected(error: any): void {
-        this.logger.log("SerialPort_OnDisconnected");
-        this.logger.error(error);
-    }
-
-    private SerialPort_OnError(error: any): void {
-        this.logger.log("SerialPort_OnError");
-        this.logger.error(error);
-    }
-
+    /**
+     * Lists all available serial ports. Remember that a device
+     * must be connected to the host to be listed here.
+     */
     public ListAvailablePorts(): void {
         this.logger.log("Listing available ports ...");
 
@@ -114,4 +110,72 @@ export class SerialLink {
             });
         });
     }
+
+    //#endregion
+
+    //#region Callbacks
+
+    /**
+     * Called, when the serial port connection has been opened successfully.
+     * Also sets up all relevant callbacks for serial communication.
+     */
+    private serialPort_OnOpen(): void {
+        this.serialPort.on("data", this.serialPort_OnDataReceived.bind(this));
+        this.serialPort.on("close", this.serialPort_OnClosed.bind(this));
+        this.serialPort.on("disconnect", this.serialPort_OnDisconnected.bind(this));
+        this.serialPort.on("error", this.serialPort_OnError.bind(this));
+
+        this.logger.log("Registered Callbacks!");
+    }
+
+    /**
+     * Called, when data has been received over the serial
+     * connection.
+     *
+     * @param data Received data as NodeBuffer
+     */
+    private serialPort_OnDataReceived(data: Buffer) {
+        let messageId = data.readUInt16BE(0);
+        let messageSize = data.readUInt32BE(2);
+        let payload = data.slice(6);
+
+        this.logger.log("");
+        this.logger.log(" >      Id: " + messageId);
+        this.logger.log(" >    Size: " + messageSize);
+        this.logger.log(" > Buffer: (" + data.byteLength + " Bytes)");
+        this.logger.dump(data);
+        this.logger.log(" > Payload: (" + payload.byteLength + " Bytes)");
+        this.logger.dump(payload);
+    }
+
+    /**
+     * Callback is called with an error object. This will always
+     * happen before a close event if a disconnection is detected.
+     *
+     * @param error Error object
+     */
+    private serialPort_OnDisconnected(error: any): void {
+        this.logger.log("SerialPort_OnDisconnected");
+        this.logger.error(error);
+    }
+
+    /**
+     * Callback is called with no arguments when the port is closed.
+     * In the event of an error, an error event will be triggered
+     */
+    private serialPort_OnClosed(): void {
+        this.logger.log("SerialPort_OnClosed");
+    }
+
+    /**
+     * Callback is called with an error object whenever there is an error.
+     * 
+     * @param error Error object
+     */
+    private serialPort_OnError(error: any): void {
+        this.logger.log("SerialPort_OnError");
+        this.logger.error(error);
+    }
+
+    //#endregion
 }
