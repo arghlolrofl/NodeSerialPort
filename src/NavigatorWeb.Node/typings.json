@@ -2,6 +2,7 @@
   "globalDependencies": {
     "cookie-parser": "registry:dt/cookie-parser#1.3.4+20160316155526",
     "core-js": "registry:dt/core-js#0.0.0+20160725163759",
+    "eventemitter3": "registry:dt/eventemitter3#1.1.1+20151208234524",
     "express-serve-static-core": "registry:dt/express-serve-static-core#4.0.0+20160829034835",
     "jasmine": "registry:dt/jasmine#2.2.0+20160621224255",
     "morgan": "registry:dt/morgan#1.7.0+20160524142355",
@@ -10,7 +11,8 @@
     "serialport": "registry:dt/serialport#4.0.1+20160809121754",
     "serve-favicon": "registry:dt/serve-favicon#0.0.0+20160316155526",
     "serve-static": "registry:dt/serve-static#0.0.0+20160606155157",
-    "socket.io": "registry:dt/socket.io#1.4.4+20160317120654",
+    "socket.io": "registry:dt/socket.io#1.4.4+20160907102948",
+    "socket.io-client": "registry:dt/socket.io-client#1.4.4+20160317120654",
     "systemjs": "registry:dt/systemjs#0.19.29+20160702105636",
     "ws": "registry:dt/ws#0.0.0+20160724122153"
   },

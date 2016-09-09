@@ -1,9 +1,14 @@
-﻿import * as SerialPort from "serialport";
+﻿import * as EventEmitter from "eventemitter3";
+
+import * as SerialPort from "serialport";
 import * as fs from "fs";
 import * as path from "path";
 
 import { ICanLog } from "./../interfaces/ICanLog";
 import { Messages } from "./../config/Messages";
+import { MessageAggregator } from "./MessageAggregator";
+import { Heartbeat } from "./Heartbeat";
+import { EventNames } from "./../config/EventNames";
 
 /**
  * Manages the communication with a serial port.
@@ -14,6 +19,38 @@ export class SerialLink {
     private readBufferSize: number = 65536;
     private serialPort: SerialPort;
     private logger: ICanLog;
+    private messageAggregator: MessageAggregator;
+    private heartbeat: Heartbeat;
+    private isConnectedToDevice: boolean = false;
+
+    //#endregion
+
+    //#region Events
+    
+    private events: EventEmitter3.EventEmitter = new EventEmitter();
+    public get Events(): EventEmitter3.EventEmitter {
+        return this.events;
+    }
+
+    //#endregion
+
+    //#region Properties
+    
+    /**
+     * Returns the device connection status
+     */
+    public get IsConnectedToDevice(): boolean { return this.isConnectedToDevice; }
+    /**
+     * Sets the device connection status
+     */
+    public set IsConnectedToDevice(val: boolean) {
+        if (this.isConnectedToDevice != val) {
+            this.logger.log("Device connection status changed: " + val);
+            this.isConnectedToDevice = val;
+            this.events.emit(EventNames.SerialLink.DEVICE_CONNECTION_STATUS_CHANGED, this.isConnectedToDevice);
+        }
+
+    }
 
     //#endregion
 
@@ -31,9 +68,18 @@ export class SerialLink {
         logger: ICanLog,
         portName: string,
         baudRate: number,
+        heartbeatInterval: number,
         bufferSize?: number
     ) {
         this.logger = logger;
+        this.logger.log("Creating SerialLink ...");
+        
+        this.initializeSerialPort(portName, baudRate, bufferSize);
+        this.initializeHeartbeat(heartbeatInterval);
+        this.initializeMessageAggregator();
+    }
+
+    private initializeSerialPort(portName: string, baudRate: number, bufferSize: number) {
         this.logger.log("Creating serial link to port '" + portName + "' with baud rate: " + baudRate);
 
         let buffSize = bufferSize || this.readBufferSize;
@@ -43,9 +89,28 @@ export class SerialLink {
             bufferSize: buffSize,
             autoOpen: false
         });
-
         this.logger.info("SerialLink read buffer size: " + buffSize);
-        this.logger.log("SerialLink initialized ...");
+    }
+
+    private initializeHeartbeat(heartbeatInterval: number) {
+        this.heartbeat = new Heartbeat(heartbeatInterval);
+        this.heartbeat.Events.on(
+            EventNames.Heartbeat.ELAPSED,
+            () => {
+                this.heartbeat_OnIntervalElapsed();
+            }
+        );
+        this.logger.info("SerialLink heartbeat interval: " + heartbeatInterval + " ms");
+    }
+
+    private initializeMessageAggregator() {
+        this.messageAggregator = new MessageAggregator();
+        this.messageAggregator.Events.on(
+            EventNames.MessageAggregator.BUFFER_ASSEMBLING_COMPLETED,
+            (data: Buffer) => {
+                this.messageAggregator_OnMessageCompleted(data);
+            }
+        );
     }
 
     //#endregion
@@ -64,12 +129,15 @@ export class SerialLink {
      * Tries to establish a connection to the device by sending
      * a 'CONNECT'-message.
      */
-    public ConnectToDevice(): void {
+    public ConnectToDevice(): void {        
         let buffer = new Buffer(Messages.CONNECT);
-        this.serialPort.write(buffer);
 
-        this.logger.log("Written to serial port: connect");
+        this.logger.log("Writing to serial port: connect");
         this.logger.dump(buffer);
+
+        this.IsConnectedToDevice = true;
+        this.heartbeat.start();
+        this.serialPort.write(buffer);
     }
 
     /**
@@ -77,11 +145,14 @@ export class SerialLink {
      * a 'DICONNECT'-message.
      */
     public DisconnectFromDevice(): void {
-        let buffer = new Buffer(Messages.DISCONNECT);
-        this.serialPort.write(buffer);
+        this.heartbeat.stop();
 
-        this.logger.log("Written to serial port: disconnect");
+        let buffer = new Buffer(Messages.DISCONNECT);
+        this.IsConnectedToDevice = false;
+
+        this.logger.log("Writing to serial port: disconnect");
         this.logger.dump(buffer);
+        this.serialPort.write(buffer);
     }
 
     /**
@@ -125,7 +196,7 @@ export class SerialLink {
         this.serialPort.on("disconnect", this.serialPort_OnDisconnected.bind(this));
         this.serialPort.on("error", this.serialPort_OnError.bind(this));
 
-        this.logger.log("Registered Callbacks!");
+        this.logger.log("Serial port opened and callbacks registered ...");
     }
 
     /**
@@ -135,17 +206,9 @@ export class SerialLink {
      * @param data Received data as NodeBuffer
      */
     private serialPort_OnDataReceived(data: Buffer) {
-        let messageId = data.readUInt16BE(0);
-        let messageSize = data.readUInt32BE(2);
-        let payload = data.slice(6);
+        this.IsConnectedToDevice = true;
 
-        this.logger.log("");
-        this.logger.log(" >      Id: " + messageId);
-        this.logger.log(" >    Size: " + messageSize);
-        this.logger.log(" > Buffer: (" + data.byteLength + " Bytes)");
-        this.logger.dump(data);
-        this.logger.log(" > Payload: (" + payload.byteLength + " Bytes)");
-        this.logger.dump(payload);
+        this.messageAggregator.PushBuffer(data);
     }
 
     /**
@@ -155,8 +218,10 @@ export class SerialLink {
      * @param error Error object
      */
     private serialPort_OnDisconnected(error: any): void {
+        this.IsConnectedToDevice = false;
         this.logger.log("SerialPort_OnDisconnected");
-        this.logger.error(error);
+        if (typeof error !== 'undefined')
+            this.logger.error(error);
     }
 
     /**
@@ -164,6 +229,7 @@ export class SerialLink {
      * In the event of an error, an error event will be triggered
      */
     private serialPort_OnClosed(): void {
+        this.IsConnectedToDevice = false;
         this.logger.log("SerialPort_OnClosed");
     }
 
@@ -172,9 +238,44 @@ export class SerialLink {
      * 
      * @param error Error object
      */
-    private serialPort_OnError(error: any): void {
-        this.logger.log("SerialPort_OnError");
-        this.logger.error(error);
+    private serialPort_OnError(error: Error): void {
+        this.logger.log("SerialPort_OnError");        
+        this.logger.log(" > Serial Port Status: " + this.serialPort.isOpen());
+
+        if (!this.serialPort.isOpen()) {
+            this.heartbeat.stop();
+            this.IsConnectedToDevice = false;
+        }
+
+        this.events.emit(EventNames.SerialLink.CONNECTION_ERROR_OCCURED, error);
+    }
+
+    /**
+     * Called, when the heartbeat interval has elapsed.
+     */
+    private heartbeat_OnIntervalElapsed() {
+        this.logger.log("SerialLink.heartbeat_OnIntervalElapsed");
+
+        let buffer = new Buffer(Messages.HEARTBEAT);
+        this.logger.dump(buffer);
+
+        try {
+            this.serialPort.write(buffer);
+            this.IsConnectedToDevice = true;
+        } catch (e) {
+            this.logger.error((<Error>e));
+            this.IsConnectedToDevice = false;
+        }
+    }
+
+    /**
+     * Callback is being called, when the message aggregator has
+     * assembled a complete message buffer.
+     *
+     * @param data Complete message buffer
+     */
+    private messageAggregator_OnMessageCompleted(data: Buffer) {
+        this.events.emit(EventNames.SerialLink.BUFFER_RECEIVED, data);
     }
 
     //#endregion

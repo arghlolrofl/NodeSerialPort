@@ -1,0 +1,16 @@
+﻿<div class="row">
+    <div class="col-md-12 col-sm-12" id="status-container">
+        <div class="connection-status red">
+            <label class="connection-status-label">DISCONNECTED</label>
+        </div>
+    </div>
+    <div class="col-md-6 col-sm-12">
+        <input type="button" [disabled]="!canConnect" value="Connect" class="full-width" (click)="connect()" />
+    </div>
+    <div class="col-md-6 col-sm-12">
+        <input type="button" [disabled]="canConnect" value="Disconnect" class="full-width" (click)="disconnect()" />
+    </div>
+    <div class="col-md-12 col-sm-12">
+        <textarea class="log-window" rows="20">{{logText}}</textarea>
+    </div> 
+</div>

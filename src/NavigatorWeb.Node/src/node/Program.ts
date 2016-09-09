@@ -4,15 +4,17 @@ import * as express from "express";
 import * as fs from "fs";
 import * as path from "path";
 import * as morgan from "morgan";
+import * as http from "http";
 
-import { Environment } from "./Environment";
+import { Environment } from "./enums/Environment";
 import { RouteManager } from "./config/RouteManager";
-import { WebSocketClient } from "./websockets/WebsocketClient";
-import { WebSocketServer } from "./websockets/WebsocketServer";
+import { WebSocketClient } from "./websocket/WebsocketClient";
+import { WebSocketServer } from "./websocket/WebsocketServer";
 import { SerialLink } from "./serial/SerialLink";
-import { Logger } from "./Logger";
+import { Logger } from "./logging/Logger";
 import { ICanLog } from "./interfaces/ICanLog";
 import { Configuration } from "./config/Configuration";
+import { EventNames } from "./config/EventNames";
 
 /**
  * Wrapper for centralized initialization and configuration
@@ -20,14 +22,18 @@ import { Configuration } from "./config/Configuration";
  * web socket client and web socket server.
  */
 export class Program {
+    private errorSubscription: any;
+
     //#region Private Members
 
     private express: express.Application;
     private logger: ICanLog;
-
+    private webServer: http.Server;
     private wsClient: WebSocketClient;
     private wsServer: WebSocketServer;
     private serialLink: SerialLink;
+
+    private IsDeviceConnected: boolean
 
     //#endregion
 
@@ -56,7 +62,10 @@ export class Program {
      * @param rootPath The root path of the node project
      */
     constructor(rootPath: string) {
+        this.initializeEnvironment();
+
         this.logger = new Logger(Program.Environment);
+        this.logger.log("Environment has been set to: " + Environment[Program.Environment]);
 
         Program.rootPath = rootPath;
         this.logger.log("Root path has been set to: " + Program.rootPath);
@@ -66,42 +75,58 @@ export class Program {
      * Bootstraps the application by initializing and
      * configuring all components/connections.
      */
-    public bootstrap(): express.Application {
+    public bootstrap(): void {
         this.logger.log("Bootstrapping Node Express application ...");
 
-        this.initializeEnvironment();
+        this.express = express();
+        
+        this.initializeWebSocketServer();
+        this.initializeSerialLink();
 
-        // this.testSerialLink();
+        this.initializeWebServer();
+        this.registerRoutes();
 
-        // this.app = express();
-
-        // this.configureEnvironment(Environment.DEBUG);
-        // this.configureRoutes();
-
-        // this.initializeWebSocketClient();
-        // this.initializeWebSocketServer();
-
-        return this.express;
+        this.logger.log("Bootstrapped application, starting web server ...");
+        this.webServer = this.express.listen(this.express.get("port"), () => {
+            console.log("Express server listening on port " + this.webServer.address().port);
+        });
     }
 
     //#endregion
 
-
-    private testSerialLink(): void {
-        this.serialLink = new SerialLink(this.logger, "COM7", 115200);
-
-        this.serialLink.Open();
-        setTimeout(this.serialLink.ConnectToDevice.bind(this.serialLink), 1000);
-        setTimeout(this.testLink.bind(this), 5000);
-        setTimeout(this.serialLink.DisconnectFromDevice.bind(this.serialLink), 7000);
-        setTimeout(this.serialLink.Close.bind(this.serialLink), 10000);
-    }
-
-    private testLink() {
-        this.logger.log("LAST MESSAGE RECEIVED:");
-    }
-
+        
     //#region Helpers
+
+    private initializeSerialLink(): void {
+        this.serialLink = new SerialLink(
+            this.logger,
+            "COM7",
+            115200,
+            Configuration.Serial.HeartbeatInterval
+        );
+
+        this.serialLink.Events.on(
+            EventNames.SerialLink.BUFFER_RECEIVED,
+            (data: Buffer) => {
+                this.serialLink_OnBufferReceivedCompletely(data);
+            }
+        );
+        this.serialLink.Events.on(
+            EventNames.SerialLink.DEVICE_CONNECTION_STATUS_CHANGED,
+            (val: boolean) => {
+                this.serialLink_OnDeviceConnectionStatusChanged(val);
+            }
+        );
+        this.serialLink.Events.on(
+            EventNames.SerialLink.CONNECTION_ERROR_OCCURED,
+            (err: Error) => {
+                this.serialLink_OnError(err);
+            }
+        );
+
+        this.logger.log("Opening serial connection ...");
+        this.serialLink.Open();
+    }
 
     /**
      * Initializes the node application with the environment that
@@ -113,31 +138,20 @@ export class Program {
 
         switch (environment) {
             case "DEBUG":
-                Program.Environment = Environment.DEBUG;
+                Program.environment = Environment.DEBUG;
                 break;
             case "STAGING":
-                Program.Environment = Environment.STAGING;
+                Program.environment = Environment.STAGING;
                 break;
             case "RELEASE":
-                Program.Environment = Environment.RELEASE;
+                Program.environment = Environment.RELEASE;
                 break;
             case "PRODUCTION":
-                Program.Environment = Environment.PRODUCTION;
+                Program.environment = Environment.PRODUCTION;
                 break;
             default:
                 throw new Error("Invalid environment for node detected: " + environment);
         }
-
-        this.logger.log("Environment has been set to: " + environment);
-    }
-
-    /**
-     * Initializes the web socket client connection.
-     */
-    private initializeWebSocketClient(): void {
-        this.wsClient = new WebSocketClient(Configuration.WebSocketClient.Url);
-        this.wsClient.messageReceived$.subscribe(this.webSocketClient_OnMessageReceived.bind(this));
-        this.wsClient.connect();
     }
 
     /**
@@ -145,6 +159,12 @@ export class Program {
      */
     private initializeWebSocketServer(): void {
         this.wsServer = new WebSocketServer(Configuration.WebSocketServer.Port);
+        this.wsServer.Events.on(
+            EventNames.WebSocketServer.CLIENT_REQUEST_RECEIVED,
+            (request: string) => {
+                this.webSocketServer_OnRequestReceived(request);
+            }
+        );
         this.wsServer.listen();
     }
 
@@ -154,8 +174,8 @@ export class Program {
      */
     private initializeWebServer(): void {
         this.express.set("port", Configuration.WebServer.Port);
-        this.logger.log("Web Server is using port: " + this.express.get("port"));
 
+        this.logger.log("Initializing request logger ...");
         // uncomment the following 2 lines to log to a file 
         // (remember to comment in the line below then)
         //
@@ -163,7 +183,6 @@ export class Program {
         // this.app.use(morgan("    :status    :method    :url", { stream: accessLogStream }));
         this.express.use(morgan("    :status    :method    :url"));
 
-        this.logger.log("Initializing request logger ...");
     }
 
     /**
@@ -179,12 +198,36 @@ export class Program {
     //#region Callbacks
 
     /**
-     * Callback, when data on the web socket client has been received.
+     * Callback for received client requests
      *
-     * @param data Received message
+     * @param message Request string
      */
-    private webSocketClient_OnMessageReceived(data: string): void {
-        this.wsServer.updateClients(data);
+    private webSocketServer_OnRequestReceived(request: string): void {
+        switch (request) {
+            case "connect":
+                this.serialLink.ConnectToDevice();
+                break;
+            case "disconnect":
+                this.serialLink.DisconnectFromDevice();
+                break;
+            default:
+                this.logger.log("Invalid request received: " + request);
+                this.serialLink_OnError(new Error("Invalid request: " + request));
+                break;
+        }
+    }
+
+    private serialLink_OnBufferReceivedCompletely(data: Buffer): void {        
+        this.wsServer.sendBuffer(data);
+    }
+
+    private serialLink_OnError(error: Error) {
+        this.logger.log("Informing client about error ...");
+        this.wsServer.sendError(error);
+    }
+
+    private serialLink_OnDeviceConnectionStatusChanged(isConnected: boolean) {        
+        this.wsServer.sendDeviceConnectionStatus(isConnected);
     }
 
     //#endregion

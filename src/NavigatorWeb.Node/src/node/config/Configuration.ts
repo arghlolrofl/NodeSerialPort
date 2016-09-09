@@ -1,5 +1,23 @@
 ﻿export namespace Configuration {
     /**
+     * Serial connection configuration settings
+     */
+    export class Serial {
+        private static heartbeatInterval: number;
+        /**
+         * Port of the web server created by the express framework
+         */
+        public static get HeartbeatInterval(): number { return Serial.heartbeatInterval; }
+
+        /**
+         * Static constructor
+         */
+        private static _constructor = (() => {
+            // Adjust the port the web server is listening on here
+            Serial.heartbeatInterval = 5000;
+        })();
+    }
+    /**
      * WebServer configuration settings
      */
     export class WebServer {
@@ -13,8 +31,6 @@
          * Static constructor
          */
         private static _constructor = (() => {
-            console.log("Static WebServer constructor");
-
             // Adjust the port the web server is listening on here
             WebServer.port = 3000;
         })();
@@ -53,8 +69,6 @@
          * Static constructor
          */
         private static _constructor = (() => {
-            console.log("Static WebSocketClient constructor");
-
             WebSocketClient.port = 55666;
             WebSocketClient.path = "scale";
             WebSocketClient.host = "10.34.2.110";
@@ -88,10 +102,8 @@
          * Static constructor
          */
         private static _constructor = (() => {
-            console.log("Static WebSocketServer constructor");
-
             WebSocketServer.port = 55667;
-            WebSocketServer.host = "10.34.2.57";
+            WebSocketServer.host = "10.34.2.110";
         })();
     }
 }

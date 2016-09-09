@@ -44,10 +44,11 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="dist\specs\TestSpec.js" />
     <Compile Include="public\lib\jquery-v3.1.0.min.js" />
     <Compile Include="public\lib\Reflect.js" />
     <Compile Include="public\lib\shim.min.js" />
-    <Compile Include="public\lib\socket.io.min.js" />
+    <Compile Include="public\lib\socket.io-client.min.js" />
     <Compile Include="public\lib\system.src.js" />
     <Compile Include="public\lib\zone.js" />
     <Compile Include="public\systemjs.config.js" />
@@ -59,12 +60,10 @@
     <Content Include="public\img\scale.png" />
     <Content Include="public\index.html" />
     <Content Include="public\css\styles.css" />
-    <Content Include="public\lib\Reflect.js.map" />
-    <Content Include="public\lib\shim.min.js.map" />
-    <Content Include="public\views\app.component.html" />
+    <Content Include="public\views\AppComponent.html" />
     <Content Include="src\node\serial\MessageAggregator.ts" />
     <Content Include="src\node\serial\SerialLink.ts" />
-    <Content Include="src\spec\support\jasmine.json" />
+    <Content Include="JasmineNodeTestAdapter.json" />
     <Content Include="src\tsconfig.json" />
     <Content Include="src\tslint.json" />
     <Content Include="typings.json" />
@@ -76,13 +75,16 @@
     <Folder Include="dist\app\" />
     <Folder Include="dist\common\" />
     <Folder Include="dist\node\" />
-    <Folder Include="dist\spec\" />
+    <Folder Include="dist\specs\" />
     <Folder Include="public\views\" />
     <Folder Include="src\app\repositories\" />
+    <Folder Include="src\common\" />
     <Folder Include="src\node\config\" />
     <Folder Include="src\node\interfaces\" />
+    <Folder Include="src\node\enums\" />
+    <Folder Include="src\node\logging\" />
     <Folder Include="src\node\serial\" />
-    <Folder Include="src\node\websockets\" />
+    <Folder Include="src\node\websocket\" />
     <Folder Include="src\node\routes\" />
     <Folder Include="src\" />
     <Folder Include="public\" />
@@ -95,10 +97,9 @@
     <Folder Include="src\app\services\" />
     <Folder Include="src\app\components\" />
     <Folder Include="src\node\" />
-    <Folder Include="src\spec\" />
-    <Folder Include="src\spec\node\" />
-    <Folder Include="src\spec\node\serial\" />
-    <Folder Include="src\spec\support\" />
+    <Folder Include="src\specs\" />
+    <Folder Include="src\specs\node\" />
+    <Folder Include="src\specs\node\serial\" />
     <Folder Include="typings\" />
     <Folder Include="typings\globals\" />
     <Folder Include="typings\modules\" />
@@ -119,21 +120,26 @@
   <ItemGroup>
     <TypeScriptCompile Include="src\app\AppComponent.ts" />
     <TypeScriptCompile Include="src\app\AppModule.ts" />
+    <TypeScriptCompile Include="src\app\EventNames.ts" />
     <TypeScriptCompile Include="src\app\interfaces\IRepositoryService.ts" />
     <TypeScriptCompile Include="src\app\main.ts" />
     <TypeScriptCompile Include="src\app\models\Thing.ts" />
     <TypeScriptCompile Include="src\app\services\WebSocketClientService.ts" />
     <TypeScriptCompile Include="src\app\repositories\ThingService.ts" />
+    <TypeScriptCompile Include="src\common\MessageIds.ts" />
+    <TypeScriptCompile Include="src\common\SocketChannels.ts" />
     <TypeScriptCompile Include="src\node\config\Configuration.ts" />
+    <TypeScriptCompile Include="src\node\config\EventNames.ts" />
     <TypeScriptCompile Include="src\node\config\Messages.ts" />
     <TypeScriptCompile Include="src\node\interfaces\ICanLog.ts" />
-    <TypeScriptCompile Include="src\node\Logger.ts" />
-    <TypeScriptCompile Include="src\node\Environment.ts" />
+    <TypeScriptCompile Include="src\node\logging\Logger.ts" />
+    <TypeScriptCompile Include="src\node\enums\Environment.ts" />
     <TypeScriptCompile Include="src\node\Program.ts" />
     <TypeScriptCompile Include="src\node\config\RouteManager.ts" />
-    <TypeScriptCompile Include="src\node\websockets\WebsocketClient.ts" />
-    <TypeScriptCompile Include="src\node\websockets\WebsocketServer.ts" />
-    <TypeScriptCompile Include="src\spec\node\serial\MessageAggregatorSpec.ts" />
+    <TypeScriptCompile Include="src\node\serial\Heartbeat.ts" />
+    <TypeScriptCompile Include="src\node\websocket\WebsocketClient.ts" />
+    <TypeScriptCompile Include="src\node\websocket\WebsocketServer.ts" />
+    <TypeScriptCompile Include="src\specs\node\serial\MessageAggregatorSpec.ts" />
     <TypeScriptCompile Include="typings\index.d.ts" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsUwp.targets" />

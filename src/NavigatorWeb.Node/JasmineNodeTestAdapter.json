@@ -1,0 +1,10 @@
+{
+  "$schema": "http://MortenHoustonLudvigsen.github.io/JasmineNodeTestAdapter/JasmineNodeTestAdapter.schema.json",
+  "Name": "NavigatorWeb",
+  "BasePath": ".",
+  "Helpers": [ "dist/specs/**/*[Hh]elper.js" ],
+  "Specs": [ "dist/specs/**/*[Ss]pec.js" ],
+  "Disabled": true,
+  "LogToFile": true,
+  "LogDirectory": "logs/"
+}

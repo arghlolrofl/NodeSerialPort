@@ -76,3 +76,45 @@ a {
 .hide {
     display: none;
 }
+
+.full-width {
+    width: 100%;
+    height: 50px;
+    margin-top: 10px;
+}
+
+.connection-status {
+    width: 100%;
+    padding: 1.5% 0;
+    text-align: center;
+}
+
+.connection-status-label {
+    margin-bottom: 0;
+    font-size: 16pt;
+    vertical-align: middle;
+}
+
+
+
+.red {
+    background-color: rgba(255, 51, 51, 0.5);
+}
+.green {
+    background-color: rgba(0, 153, 0, 0.5);
+}
+
+.log-window {
+    margin-top: 10px;
+    width: 100%;
+}
+
+.jumbotron {
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
+}
+
+.no-wrap {
+     white-space: nowrap; 
+     overflow: auto;
+}

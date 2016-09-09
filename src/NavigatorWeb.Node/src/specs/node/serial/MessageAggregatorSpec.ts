@@ -34,7 +34,7 @@ describe("MessageAggregator", function () {
         let aggregator = new MessageAggregator();
         aggregator.PushBuffer(buffer1);
         aggregator.PushBuffer(buffer2);
-        let resultBuffer = aggregator.GetCachedBuffer();
+        let resultBuffer = aggregator.CachedBuffer;
 
         expect(resultBuffer.entries())
             .toEqual(new Buffer([0, 2, 0, 0, 0, 7]).entries());
@@ -46,7 +46,7 @@ describe("MessageAggregator", function () {
 
         aggregator.PushBuffer(buffer1);
         let completeBuffer = aggregator.PopMessage();
-        let cachedBuffer = aggregator.GetCachedBuffer();
+        let cachedBuffer = aggregator.CachedBuffer;
 
         expect(completeBuffer.entries())
             .toEqual(new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69, 69, 69]).entries());

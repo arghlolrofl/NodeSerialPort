@@ -45,10 +45,15 @@ export class RouteManager {
     //#region Public Methods
 
     public ApplyRoutes(): express.Application {
+        this.logger.log("Configuring routes ...");
+
         this.AddStaticRoute("/public");
+        this.AddStaticRoute("/dist/app", "/app");
+        this.AddStaticRoute("/dist/common", "/common");
         this.AddStaticRoute("/node_modules/@angular", "/@angular");
         this.AddStaticRoute("/node_modules/rxjs", "/rxjs");
-        this.AddStaticRoute("/node_modules/node-waves/dist", "/waves");
+        this.AddStaticRoute("/node_modules/eventemitter3", "/eventemitter3");
+
 
         this.AddApiRoutes();
 
