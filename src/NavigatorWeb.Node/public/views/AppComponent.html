@@ -5,10 +5,10 @@
         </div>
     </div>
     <div class="col-md-6 col-sm-12">
-        <input type="button" [disabled]="!canConnect" value="Connect" class="full-width" (click)="connect()" />
+        <input type="button" [disabled]="!canConnect" value="Connect" class="full-width" (click)="connectToDevice()" />
     </div>
     <div class="col-md-6 col-sm-12">
-        <input type="button" [disabled]="canConnect" value="Disconnect" class="full-width" (click)="disconnect()" />
+        <input type="button" [disabled]="!canDisconnect" value="Disconnect" class="full-width" (click)="disconnectFromDevice()" />
     </div>
     <div class="col-md-12 col-sm-12">
         <textarea class="log-window" rows="20">{{logText}}</textarea>

@@ -127,6 +127,7 @@
     <TypeScriptCompile Include="src\app\services\WebSocketClientService.ts" />
     <TypeScriptCompile Include="src\app\repositories\ThingService.ts" />
     <TypeScriptCompile Include="src\common\MessageIds.ts" />
+    <TypeScriptCompile Include="src\common\ClientRequest.ts" />
     <TypeScriptCompile Include="src\common\SocketChannels.ts" />
     <TypeScriptCompile Include="src\node\config\Configuration.ts" />
     <TypeScriptCompile Include="src\node\config\EventNames.ts" />

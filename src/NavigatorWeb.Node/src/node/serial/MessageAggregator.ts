@@ -25,7 +25,9 @@ export class MessageAggregator {
      * Gets the cached buffer
      */
     public get CachedBuffer(): Buffer { return this.cachedBuffer; }
-
+    /**
+     * Class' event emitter
+     */
     public get Events(): EventEmitter3.EventEmitter { return this.events; }
 
     //#endregion
@@ -117,25 +119,20 @@ export class MessageAggregator {
      * @param buffer2 Second buffer to concatenate
      */
     private ConcatBuffers(buffer1: Buffer, buffer2: Buffer): Buffer {
-        let b = new Buffer(buffer1.length + buffer2.length);
+        let concatenatedBuffer = new Buffer(buffer1.length + buffer2.length);
 
         let elemCount = 0;
         for (let i = 0; i < buffer1.length; i++) {
             let elem = buffer1.readUInt8(i);
 
-            b.writeUInt8(elem, elemCount);
-
-            elemCount++;
+            concatenatedBuffer.writeUInt8(elem, elemCount++);
         }
 
         for (let i = 0; i < buffer2.length; i++) {
             let elem = buffer2.readUInt8(i);
-
-            b.writeUInt8(elem, elemCount);
-
-            elemCount++;
+            concatenatedBuffer.writeUInt8(elem, elemCount++);
         }
 
-        return b;
+        return concatenatedBuffer;
     }
 }

@@ -4,7 +4,8 @@ import * as io from "socket.io";
 import * as EventEmitter from "eventemitter3";
 
 import { EventNames } from "./../config/EventNames";
-import { SocketChannels } from "./../../common/SocketChannels";
+import { Socket } from "./../../common/SocketChannels";
+import { ClientRequest } from "./../../common/ClientRequest";
 
 export class WebSocketServer {
     private lastErrorSent: Error;
@@ -14,6 +15,8 @@ export class WebSocketServer {
     private webSocket: SocketIO.Server;
     private port: number;
     private events: EventEmitter3.EventEmitter = new EventEmitter();
+
+    private clientConnections: Array<SocketIO.Socket>;    
 
     //#region Properties
 
@@ -28,25 +31,43 @@ export class WebSocketServer {
      */
     constructor(port: number) {
         this.port = port;
+        this.clientConnections = new Array<SocketIO.Socket>();
     }
 
     /**
      * Listens for incoming connections.
      */
     public listen() {
+        // create the server instance ...
         this.webSocket = io();
-
+        // ... and after a connection has been established ...
         this.webSocket.on("connection", (socket: SocketIO.Socket) => {
-            socket.on(SocketChannels.CLIENT_REQUEST, (message: string) => {
-                console.log("[WEBSOCKET-SERVER] Client requested: '" + message + "' ...");
-                this.events.emit(EventNames.WebSocketServer.CLIENT_REQUEST_RECEIVED, message);
+            this.clientConnections.push(socket);
+
+            // ... we subscribe to the client's request channel ...
+            socket.on(Socket.Channels.CLIENT_REQUEST, (req: ClientRequest) => {
+                console.log("[WEBSOCKET-SERVER] Client '" + req.clientId + "' requested: " + req.request + " ...");
+                this.events.emit(EventNames.WebSocketServer.CLIENT_REQUEST_RECEIVED, req);
             });
 
+            // ... and we also want to get notified, if a client disconnects
+            socket.on("disconnect", () => {
+                console.log("[WEBSOCKET-SERVER] Client '" + socket.client.id + "' disconnected ...");
+                for (let i = 0; i < this.clientConnections.length; i++) {
+                    if (this.clientConnections[i].id === socket.client.id) {
+                        this.clientConnections.splice(i, 1);
+                        return;
+                    }
+                }
+            });
+
+            // send the welcome message
             console.log("[WEBSOCKET-SERVER] Client '" + socket.client.id + "' connected ...");
-            this.sendMessage("Welcome client '" + socket.client.id + "'!");
+            socket.emit(Socket.Channels.ID_EXCHANGE, socket.client.id);
+            this.sendMessage("Welcome client '" + socket.client.id + "'!", socket.client.id);
         });
-        
-        this.webSocket.listen(this.port);
+
+        this.webSocket = this.webSocket.listen(this.port);
         console.log("[WEBSOCKET-SERVER] Listening on port: " + this.port);        
     }
     
@@ -55,8 +76,11 @@ export class WebSocketServer {
      *
      * @param msg Flag, if a device is connected via serial port.
      */
-    public sendDeviceConnectionStatus(isConnected: boolean) {
-        this.webSocket.sockets.emit(SocketChannels.CONNECTION_STATUS, isConnected);
+    public sendDeviceConnectionStatus(isConnected: boolean, socketClientId?: string): void {
+        if (socketClientId == null || typeof socketClientId === 'undefined')
+            return;
+
+        this.webSocket.to("/#" + socketClientId).emit(Socket.Channels.CONNECTION_STATUS, isConnected);
     }
 
     /**
@@ -64,8 +88,11 @@ export class WebSocketServer {
      *
      * @param msg Text to send
      */
-    public sendMessage(msg: string) {
-        this.webSocket.sockets.emit(SocketChannels.MESSAGE, msg);
+    public sendMessage(msg: string, socketClientId?: string): void {
+        if (socketClientId == null || typeof socketClientId === 'undefined')
+            return;
+
+        this.webSocket.to("/#" + socketClientId).emit(Socket.Channels.MESSAGE, msg);
     }
 
     /**
@@ -73,8 +100,11 @@ export class WebSocketServer {
      *
      * @param {string} data Received buffer.
      */
-    public sendBuffer(data: Buffer): void {
-        this.webSocket.sockets.emit(SocketChannels.DATA, data);
+    public sendBuffer(data: Buffer, socketClientId?: string): void {
+        if (socketClientId == null || typeof socketClientId === 'undefined')
+            return;
+
+        this.webSocket.to("/#" + socketClientId).emit(Socket.Channels.DATA, data);
     }
 
     /**
@@ -82,7 +112,12 @@ export class WebSocketServer {
      *
      * @param err Error object
      */
-    public sendError(err: Error): void {
+    public sendError(err: Error, socketClientId?: string): void {
+        if (socketClientId == null || typeof socketClientId === 'undefined')
+            return;
+
+        // sometimes, the same error is being thrown multiple times,
+        // but we want to send it to the client only once.
         if (typeof this.lastErrorSent !== 'undefined'
             && this.lastErrorSent.message === err.message
             && Date.now() < this.lastErrorTimestamp + this.repeatErrorThreshold) {
@@ -92,7 +127,7 @@ export class WebSocketServer {
         // Warning: When sending an Error object directly,
         // the client will only receive a plain and empty
         // js-object. So, we serialize it ourselves.
-        this.webSocket.sockets.emit(SocketChannels.EXCEPTION, {
+        this.webSocket.to("/#" + socketClientId).emit(Socket.Channels.EXCEPTION, {
             message: err.message,
             name: err.name,
             stack: err.stack

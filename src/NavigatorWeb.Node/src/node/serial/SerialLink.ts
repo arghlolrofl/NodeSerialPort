@@ -17,39 +17,41 @@ export class SerialLink {
     //#region Private Members
 
     private readBufferSize: number = 65536;
+    private portName: string;
     private serialPort: SerialPort;
     private logger: ICanLog;
     private messageAggregator: MessageAggregator;
     private heartbeat: Heartbeat;
     private isConnectedToDevice: boolean = false;
-
-    //#endregion
-
-    //#region Events
-    
     private events: EventEmitter3.EventEmitter = new EventEmitter();
-    public get Events(): EventEmitter3.EventEmitter {
-        return this.events;
-    }
 
     //#endregion
 
     //#region Properties
-    
+
     /**
-     * Returns the device connection status
+     * Class' event emitter.
+     */
+    public get Events(): EventEmitter3.EventEmitter { return this.events; }
+    /**
+     * Getter for the device connection status
      */
     public get IsConnectedToDevice(): boolean { return this.isConnectedToDevice; }
     /**
-     * Sets the device connection status
+     * Setter for the device connection status
      */
     public set IsConnectedToDevice(val: boolean) {
         if (this.isConnectedToDevice != val) {
             this.logger.log("Device connection status changed: " + val);
             this.isConnectedToDevice = val;
             this.events.emit(EventNames.SerialLink.DEVICE_CONNECTION_STATUS_CHANGED, this.isConnectedToDevice);
-        }
 
+            if (this.isConnectedToDevice === true) {
+                this.heartbeat.start();
+            } else {
+                this.heartbeat.stop();
+            }
+        }
     }
 
     //#endregion
@@ -73,25 +75,38 @@ export class SerialLink {
     ) {
         this.logger = logger;
         this.logger.log("Creating SerialLink ...");
-        
-        this.initializeSerialPort(portName, baudRate, bufferSize);
+        this.portName = portName;
+
+        this.initializeSerialPort(baudRate, bufferSize);
         this.initializeHeartbeat(heartbeatInterval);
         this.initializeMessageAggregator();
     }
 
-    private initializeSerialPort(portName: string, baudRate: number, bufferSize: number) {
-        this.logger.log("Creating serial link to port '" + portName + "' with baud rate: " + baudRate);
+    /**
+     * Initializes the serial port connection
+     *
+     * @param baudRate Desired baudrate for serial connection
+     * @param bufferSize Desired buffer size for incoming data
+     */
+    private initializeSerialPort(baudRate: number, bufferSize: number) {
+        this.logger.log("Creating serial link to port '" + this.portName + "' with baud rate: " + baudRate);
 
         let buffSize = bufferSize || this.readBufferSize;
-        this.serialPort = new SerialPort(portName, {
+        this.logger.info("SerialLink read buffer size: " + buffSize);
+
+        this.serialPort = new SerialPort(this.portName, {
             baudRate: baudRate,
             parity: "odd",
             bufferSize: buffSize,
             autoOpen: false
         });
-        this.logger.info("SerialLink read buffer size: " + buffSize);
     }
 
+    /**
+     * Initializes the heartbeat instance.
+     *
+     * @param heartbeatInterval Interval in ms when the heartbeat will raise the elapsed event
+     */
     private initializeHeartbeat(heartbeatInterval: number) {
         this.heartbeat = new Heartbeat(heartbeatInterval);
         this.heartbeat.Events.on(
@@ -103,6 +118,9 @@ export class SerialLink {
         this.logger.info("SerialLink heartbeat interval: " + heartbeatInterval + " ms");
     }
 
+    /**
+     * Initializes the message aggregator
+     */
     private initializeMessageAggregator() {
         this.messageAggregator = new MessageAggregator();
         this.messageAggregator.Events.on(
@@ -122,22 +140,28 @@ export class SerialLink {
      * if it was successfull.
      */
     public Open(): void {
-        this.serialPort.open(this.serialPort_OnOpen.bind(this));
+        this.serialPort.open(this.serialPort_OnOpen.bind(this));        
     }
 
     /**
      * Tries to establish a connection to the device by sending
      * a 'CONNECT'-message.
      */
-    public ConnectToDevice(): void {        
+    public ConnectToDevice(): void {
+        this.IsConnectedToDevice = false;
+
         let buffer = new Buffer(Messages.CONNECT);
 
         this.logger.log("Writing to serial port: connect");
         this.logger.dump(buffer);
-
-        this.IsConnectedToDevice = true;
-        this.heartbeat.start();
-        this.serialPort.write(buffer);
+        try {
+            this.serialPort.write(buffer);
+            // we don't know yet, if the connection has been established
+            // successfully. therefore we will check that later.
+            setTimeout(this.checkDeviceConnection.bind(this), 1000);
+        } catch (e) {
+            this.logger.error(<Error>e);
+        }
     }
 
     /**
@@ -145,14 +169,16 @@ export class SerialLink {
      * a 'DICONNECT'-message.
      */
     public DisconnectFromDevice(): void {
-        this.heartbeat.stop();
-
         let buffer = new Buffer(Messages.DISCONNECT);
-        this.IsConnectedToDevice = false;
 
         this.logger.log("Writing to serial port: disconnect");
         this.logger.dump(buffer);
-        this.serialPort.write(buffer);
+        try {
+            this.IsConnectedToDevice = false;
+            this.serialPort.write(buffer);
+        } catch (e) {
+            this.logger.error(<Error>e);
+        }
     }
 
     /**
@@ -169,17 +195,23 @@ export class SerialLink {
      * Lists all available serial ports. Remember that a device
      * must be connected to the host to be listed here.
      */
-    public ListAvailablePorts(): void {
-        this.logger.log("Listing available ports ...");
-
-        SerialPort.list(function (err, ports) {
-            ports.forEach(function (port) {
-                this.logger.log("    --- PORT ---");
-                this.logger.log("        " + port.comName);
-                this.logger.log("        " + port.pnpId);
-                this.logger.log("        " + port.manufacturer);
+    public FetchPortInfo(): void {
+        SerialPort.list((err, ports) => {
+            ports.forEach((port) => {
+                if (port.comName === this.portName) {
+                    this.logger.log("--- PORT [" + port.comName + "] ---");
+                    this.logger.log("    " + port.manufacturer);
+                    this.logger.log("    " + port.pnpId);
+                }
             });
         });
+    }
+
+    private checkDeviceConnection(): void {
+        if (!this.IsConnectedToDevice) {
+            this.Events.emit(EventNames.SerialLink.CONNECTION_ERROR_OCCURED, new Error("Device is not responding!"));
+            this.Events.emit(EventNames.SerialLink.DEVICE_CONNECTION_STATUS_CHANGED, false);            
+        }
     }
 
     //#endregion
@@ -196,6 +228,8 @@ export class SerialLink {
         this.serialPort.on("disconnect", this.serialPort_OnDisconnected.bind(this));
         this.serialPort.on("error", this.serialPort_OnError.bind(this));
 
+        this.FetchPortInfo();
+
         this.logger.log("Serial port opened and callbacks registered ...");
     }
 
@@ -206,8 +240,6 @@ export class SerialLink {
      * @param data Received data as NodeBuffer
      */
     private serialPort_OnDataReceived(data: Buffer) {
-        this.IsConnectedToDevice = true;
-
         this.messageAggregator.PushBuffer(data);
     }
 
@@ -243,7 +275,6 @@ export class SerialLink {
         this.logger.log(" > Serial Port Status: " + this.serialPort.isOpen());
 
         if (!this.serialPort.isOpen()) {
-            this.heartbeat.stop();
             this.IsConnectedToDevice = false;
         }
 
@@ -276,6 +307,14 @@ export class SerialLink {
      */
     private messageAggregator_OnMessageCompleted(data: Buffer) {
         this.events.emit(EventNames.SerialLink.BUFFER_RECEIVED, data);
+
+        // When initiating a connection to the device, if all goes well,
+        // we receive a lot of status messages. The first message received,
+        // after triggering a connect should have the id 17 (ConfirmConnect).        
+        if (data[1] === 17) {
+            // So, now we can assume, that we're connected to the device!
+            this.IsConnectedToDevice = true;
+        }
     }
 
     //#endregion

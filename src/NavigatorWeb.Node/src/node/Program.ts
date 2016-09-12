@@ -8,13 +8,13 @@ import * as http from "http";
 
 import { Environment } from "./enums/Environment";
 import { RouteManager } from "./config/RouteManager";
-import { WebSocketClient } from "./websocket/WebsocketClient";
 import { WebSocketServer } from "./websocket/WebsocketServer";
 import { SerialLink } from "./serial/SerialLink";
 import { Logger } from "./logging/Logger";
 import { ICanLog } from "./interfaces/ICanLog";
 import { Configuration } from "./config/Configuration";
 import { EventNames } from "./config/EventNames";
+import { ClientRequest } from "./../common/ClientRequest";
 
 /**
  * Wrapper for centralized initialization and configuration
@@ -29,11 +29,9 @@ export class Program {
     private express: express.Application;
     private logger: ICanLog;
     private webServer: http.Server;
-    private wsClient: WebSocketClient;
     private wsServer: WebSocketServer;
     private serialLink: SerialLink;
-
-    private IsDeviceConnected: boolean
+    private connectedClientId: string;
 
     //#endregion
 
@@ -92,11 +90,9 @@ export class Program {
         });
     }
 
-    //#endregion
-
-        
-    //#region Helpers
-
+    /**
+     * Initializes the serial port connection to the device.
+     */
     private initializeSerialLink(): void {
         this.serialLink = new SerialLink(
             this.logger,
@@ -161,7 +157,7 @@ export class Program {
         this.wsServer = new WebSocketServer(Configuration.WebSocketServer.Port);
         this.wsServer.Events.on(
             EventNames.WebSocketServer.CLIENT_REQUEST_RECEIVED,
-            (request: string) => {
+            (request: ClientRequest) => {
                 this.webSocketServer_OnRequestReceived(request);
             }
         );
@@ -202,13 +198,19 @@ export class Program {
      *
      * @param message Request string
      */
-    private webSocketServer_OnRequestReceived(request: string): void {
-        switch (request) {
+    private webSocketServer_OnRequestReceived(request: ClientRequest): void {
+        switch (request.request) {
             case "connect":
-                this.serialLink.ConnectToDevice();
+                if (this.serialLink.IsConnectedToDevice)
+                    this.serialLink_OnError(new Error("Another client is already connected to the device!"));
+                else {
+                    this.serialLink.ConnectToDevice();
+                    this.connectedClientId = request.clientId;
+                }
                 break;
             case "disconnect":
                 this.serialLink.DisconnectFromDevice();
+                this.connectedClientId = null;
                 break;
             default:
                 this.logger.log("Invalid request received: " + request);
@@ -217,17 +219,32 @@ export class Program {
         }
     }
 
-    private serialLink_OnBufferReceivedCompletely(data: Buffer): void {        
-        this.wsServer.sendBuffer(data);
+    /**
+     * Callback for completely received messages by the message aggregator.
+     *
+     * @param data Completely received message
+     */
+    private serialLink_OnBufferReceivedCompletely(data: Buffer): void {
+        this.wsServer.sendBuffer(data, this.connectedClientId);
     }
 
+    /**
+     * Callback for serial link errors
+     *
+     * @param error
+     */
     private serialLink_OnError(error: Error) {
-        this.logger.log("Informing client about error ...");
-        this.wsServer.sendError(error);
+        this.logger.log("Informing client '" + this.connectedClientId + "' about error: " + error.message);
+        this.wsServer.sendError(error, this.connectedClientId);
     }
 
-    private serialLink_OnDeviceConnectionStatusChanged(isConnected: boolean) {        
-        this.wsServer.sendDeviceConnectionStatus(isConnected);
+    /**
+     * Callback, when the device connection status changes
+     *
+     * @param isConnected
+     */
+    private serialLink_OnDeviceConnectionStatusChanged(isConnected: boolean) {
+        this.wsServer.sendDeviceConnectionStatus(isConnected, this.connectedClientId);
     }
 
     //#endregion
