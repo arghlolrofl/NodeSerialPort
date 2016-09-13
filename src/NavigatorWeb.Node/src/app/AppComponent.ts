@@ -117,7 +117,9 @@ export class AppComponent implements OnInit {
     private processData(data: Int8Array) {
         let messageId: number = data[1];
         let desc: string = MessageIdentifier.GetStringById(messageId);
-        this.log("Received data [" + data.byteLength + "]: " + desc);
+        // left padding for byte length
+        let byteLength: string = ("000000" + data.byteLength).slice(-6);
+        this.log("Received data [" + byteLength + "]: " + desc);
     }
 
     /**
