@@ -79,6 +79,10 @@
     <Folder Include="public\views\" />
     <Folder Include="src\app\repositories\" />
     <Folder Include="src\common\" />
+    <Folder Include="src\common\GeneratedCode\" />
+    <Folder Include="src\common\GeneratedCode\Initialization\" />
+    <Folder Include="src\common\GeneratedCode\Printing\" />
+    <Folder Include="src\common\DataTypes\" />
     <Folder Include="src\node\config\" />
     <Folder Include="src\node\interfaces\" />
     <Folder Include="src\node\enums\" />
@@ -126,6 +130,13 @@
     <TypeScriptCompile Include="src\app\models\Thing.ts" />
     <TypeScriptCompile Include="src\app\services\WebSocketClientService.ts" />
     <TypeScriptCompile Include="src\app\repositories\ThingService.ts" />
+    <TypeScriptCompile Include="src\common\DataTypes\FPDateTime.ts" />
+    <TypeScriptCompile Include="src\common\DataTypes\FPTime.ts" />
+    <TypeScriptCompile Include="src\common\DataTypes\FPDate.ts" />
+    <TypeScriptCompile Include="src\common\DataTypes\String8Bit.ts" />
+    <TypeScriptCompile Include="src\common\DataTypes\Number64Bit.ts" />
+    <TypeScriptCompile Include="src\common\DataTypes\Number32Bit.ts" />
+    <TypeScriptCompile Include="src\common\DataTypes\Number16Bit.ts" />
     <TypeScriptCompile Include="src\common\MessageIds.ts" />
     <TypeScriptCompile Include="src\common\ClientRequest.ts" />
     <TypeScriptCompile Include="src\common\SocketChannels.ts" />
@@ -184,4 +195,9 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <ItemGroup>
+    <Compile Include="src\common\GeneratedCode\Initialization\InitObjectInfo.gen.ts" />
+    <Compile Include="src\common\GeneratedCode\Initialization\SupportedSoftwareInfo.gen.ts" />
+    <Compile Include="src\common\GeneratedCode\Printing\BzlItemInfo.gen.ts" />
+  </ItemGroup>
 </Project>
