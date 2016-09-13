@@ -3,11 +3,13 @@
 import * as io from "socket.io";
 import * as EventEmitter from "eventemitter3";
 
+import { IPipelineOutput } from "./../interfaces/IPipelineOutput";
+
 import { EventNames } from "./../config/EventNames";
 import { Socket } from "./../../common/SocketChannels";
 import { ClientRequest } from "./../../common/ClientRequest";
 
-export class WebSocketServer {
+export class WebSocketServer<T> implements IPipelineOutput<T> {
     private lastErrorSent: Error;
     private lastErrorTimestamp: number;
     private repeatErrorThreshold: number = 500;
@@ -64,7 +66,7 @@ export class WebSocketServer {
             // send the welcome message
             console.log("[WEBSOCKET-SERVER] Client '" + socket.client.id + "' connected ...");
             socket.emit(Socket.Channels.ID_EXCHANGE, socket.client.id);
-            this.sendMessage("Welcome client '" + socket.client.id + "'!", socket.client.id);
+            this.sendText("Welcome client '" + socket.client.id + "'!", socket.client.id);
         });
 
         this.webSocket = this.webSocket.listen(this.port);
@@ -88,7 +90,7 @@ export class WebSocketServer {
      *
      * @param msg Text to send
      */
-    public sendMessage(msg: string, socketClientId?: string): void {
+    public sendText(msg: string, socketClientId?: string): void {
         if (socketClientId == null || typeof socketClientId === 'undefined')
             return;
 
@@ -100,7 +102,7 @@ export class WebSocketServer {
      *
      * @param {string} data Received buffer.
      */
-    public sendBuffer(data: Buffer, socketClientId?: string): void {
+    public sendData(data: T, socketClientId?: string): void {
         if (socketClientId == null || typeof socketClientId === 'undefined')
             return;
 

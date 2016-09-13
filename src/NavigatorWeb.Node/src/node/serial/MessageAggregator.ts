@@ -1,5 +1,6 @@
 ﻿import * as EventEmitter from "eventemitter3";
 import { EventNames } from "./../config/EventNames";
+import { IBufferInput } from "./../interfaces/IBufferInput";
 
 /**
  * This class is responsible to assembly incoming buffers
@@ -8,12 +9,13 @@ import { EventNames } from "./../config/EventNames";
  * Incoming buffers from the device are stored in the IncomingBufferCache.
  * Completely assembled messages are being put into the OutgoingMessageCache.
  */
-export class MessageAggregator {
+export class MessageAggregator implements IBufferInput {
     private outgoingMessageBuffer: Array<Buffer>;
     private incomingBufferCache: Array<Buffer>;
     private cachedBuffer: Buffer;
     private isLastMessageIncomplete: boolean;
     private events: EventEmitter3.EventEmitter = new EventEmitter();
+    private registeredEvents: Array<string>;
 
     //#region Properties
 
@@ -38,6 +40,7 @@ export class MessageAggregator {
     constructor() {
         this.incomingBufferCache = new Array<Buffer>();
         this.outgoingMessageBuffer = new Array<Buffer>();
+        this.registeredEvents = new Array<string>();
         this.isLastMessageIncomplete = false;
     }
 
@@ -47,7 +50,7 @@ export class MessageAggregator {
      * 
      * @param buffer Incoming buffer from the device
      */
-    public PushBuffer(buffer: Buffer): void {
+    public pushBuffer(buffer: Buffer): void {
         this.incomingBufferCache.push(buffer);
         this.ProcessIncomingBuffers();
     }
@@ -55,7 +58,7 @@ export class MessageAggregator {
     /**
      * Returns the next completely assembled message buffer
      */
-    public PopMessage() {
+    public popMessage() {
         if (this.outgoingMessageBuffer.length > 0)
             return this.outgoingMessageBuffer.shift();
 
@@ -89,26 +92,26 @@ export class MessageAggregator {
             if (incomingBuffer.byteLength === (messageSize + 6)) {
                 // here we know, that we have a complete message in the buffer,
                 // so we can push it directly to the output queue
-
-                //this.outgoingMessageBuffer.push(incomingBuffer);
-                this.events.emit(EventNames.MessageAggregator.BUFFER_ASSEMBLING_COMPLETED, incomingBuffer);
             } else if (incomingBuffer.byteLength < (messageSize + 6)) {
                 // in this case, the incoming buffer contains an incomplete
                 // message, so we must set the incomplete flag and
                 // process the next buffer
                 this.cachedBuffer = new Buffer(incomingBuffer);
                 this.isLastMessageIncomplete = true;
+
+                continue;
             } else {
                 // here we have more than one complete message in the incoming
                 // buffer, so we will extract the complete message to the output
                 // queue. the rest of the buffer will then be checked in the next
                 // iteration.
-                let tempBuffer = incomingBuffer.slice(0, messageSize + 6);
-                this.events.emit(EventNames.MessageAggregator.BUFFER_ASSEMBLING_COMPLETED, tempBuffer);
-
                 this.incomingBufferCache.unshift(
                     incomingBuffer.slice(messageSize + 6));
+
+                incomingBuffer = incomingBuffer.slice(0, messageSize + 6);
             }
+
+            this.raiseNewInputEvent(incomingBuffer);
         }
     }
 
@@ -134,5 +137,16 @@ export class MessageAggregator {
         }
 
         return concatenatedBuffer;
+    }
+
+    private raiseNewInputEvent(data: Buffer): void {
+        this.events.emit(EventNames.MessageAggregator.BUFFER_ASSEMBLING_COMPLETED, data);
+        for (let i = 0; i < this.registeredEvents.length; i++) {
+            this.events.emit(this.registeredEvents[i], data);
+        }
+    }
+
+    public registerEventForNewInput(eventName: string): void {
+        this.registeredEvents.push(eventName);
     }
 }

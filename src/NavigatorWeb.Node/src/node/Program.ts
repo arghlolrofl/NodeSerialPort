@@ -6,15 +6,20 @@ import * as path from "path";
 import * as morgan from "morgan";
 import * as http from "http";
 
+
+import { ICanLog } from "./interfaces/ICanLog";
+import { IMessagePipeline } from "./interfaces/IMessagePipeline";
+
 import { Environment } from "./enums/Environment";
 import { RouteManager } from "./config/RouteManager";
 import { WebSocketServer } from "./websocket/WebsocketServer";
 import { SerialLink } from "./serial/SerialLink";
 import { Logger } from "./logging/Logger";
-import { ICanLog } from "./interfaces/ICanLog";
 import { Configuration } from "./config/Configuration";
 import { EventNames } from "./config/EventNames";
 import { ClientRequest } from "./../common/ClientRequest";
+import { MessagePipeline } from "./MessagePipeline";
+import { MessageAggregator } from "./serial/MessageAggregator";
 
 /**
  * Wrapper for centralized initialization and configuration
@@ -29,9 +34,11 @@ export class Program {
     private express: express.Application;
     private logger: ICanLog;
     private webServer: http.Server;
-    private wsServer: WebSocketServer;
+    private wsServer: WebSocketServer<Buffer>;
     private serialLink: SerialLink;
+    private messageAggregator: MessageAggregator;
     private connectedClientId: string;
+    private messagePipeline: IMessagePipeline<Buffer>;
 
     //#endregion
 
@@ -80,9 +87,14 @@ export class Program {
         
         this.initializeWebSocketServer();
         this.initializeSerialLink();
+        this.initializeMessageAggregator();
 
         this.initializeWebServer();
         this.registerRoutes();
+
+        // create the message pipeline at last step, so we can be sure
+        // that 'input'- and 'output'-instances are initialized.
+        this.messagePipeline = new MessagePipeline(this.messageAggregator, this.wsServer);
 
         this.logger.log("Bootstrapped application, starting web server ...");
         this.webServer = this.express.listen(this.express.get("port"), () => {
@@ -104,7 +116,7 @@ export class Program {
         this.serialLink.Events.on(
             EventNames.SerialLink.BUFFER_RECEIVED,
             (data: Buffer) => {
-                this.serialLink_OnBufferReceivedCompletely(data);
+                this.serialLink_OnDataReceived(data);
             }
         );
         this.serialLink.Events.on(
@@ -165,6 +177,19 @@ export class Program {
     }
 
     /**
+     * Initializes the message aggregator and subscribes to its events.
+     */
+    private initializeMessageAggregator() {
+        this.messageAggregator = new MessageAggregator();
+        this.messageAggregator.Events.on(
+            EventNames.MessageAggregator.BUFFER_ASSEMBLING_COMPLETED,
+            (data: Buffer) => {
+                this.messageAggregator_OnMessageCompleted(data);
+            }
+        );
+    }
+
+    /**
      * Initializes the web server with a specific port that it will
      * listen on.
      */
@@ -180,7 +205,7 @@ export class Program {
         this.express.use(morgan("    :status    :method    :url"));
 
     }
-
+    
     /**
      * Registers static and API routes.
      */
@@ -206,26 +231,19 @@ export class Program {
                 else {
                     this.serialLink.ConnectToDevice();
                     this.connectedClientId = request.clientId;
+                    this.messagePipeline.setClientId(this.connectedClientId);
                 }
                 break;
             case "disconnect":
                 this.serialLink.DisconnectFromDevice();
                 this.connectedClientId = null;
+                this.messagePipeline.setClientId(null);
                 break;
             default:
                 this.logger.log("Invalid request received: " + request);
                 this.serialLink_OnError(new Error("Invalid request: " + request));
                 break;
         }
-    }
-
-    /**
-     * Callback for completely received messages by the message aggregator.
-     *
-     * @param data Completely received message
-     */
-    private serialLink_OnBufferReceivedCompletely(data: Buffer): void {
-        this.wsServer.sendBuffer(data, this.connectedClientId);
     }
 
     /**
@@ -245,6 +263,31 @@ export class Program {
      */
     private serialLink_OnDeviceConnectionStatusChanged(isConnected: boolean) {
         this.wsServer.sendDeviceConnectionStatus(isConnected, this.connectedClientId);
+    }
+
+    /**
+     * EventHandler when new data are being received via serial port.
+     *
+     * @param data Received buffer
+     */
+    private serialLink_OnDataReceived(data: Buffer): void {
+        this.messagePipeline.takeInput(data);
+    }
+
+    /**
+     * Callback is being called, when the message aggregator has
+     * assembled a complete message buffer.
+     *
+     * @param data Complete message buffer
+     */
+    private messageAggregator_OnMessageCompleted(data: Buffer) {
+        // When initiating a connection to the device, if all goes well,
+        // we receive a lot of status messages. The first message received,
+        // after triggering a connect should have the id 17 (ConfirmConnect).        
+        if (data[1] === 17) {
+            // So, now we can assume, that we're connected to the device!
+            this.serialLink.IsConnectedToDevice = true;
+        }
     }
 
     //#endregion

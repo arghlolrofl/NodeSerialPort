@@ -10,7 +10,7 @@
     "clean": "RD /S /Q \"./dist\" && MD \"./dist\"",
     "clean-libs": "RD .\\public\\lib\\ /s /q && MD .\\public\\lib\\",
     "copy-libs": "npm run clean-libs && xcopy .\\node_modules\\core-js\\client\\shim.min.js .\\public\\lib /YC && xcopy .\\node_modules\\zone.js\\dist\\zone.js .\\public\\lib /YC && xcopy .\\node_modules\\reflect-metadata\\Reflect.js .\\public\\lib /YC && xcopy .\\node_modules\\systemjs\\dist\\system.src.js .\\public\\lib /YC",
-    "test": "npm run build && jasmine-node --test-dir ./dist/spec",
+    "test": "npm run build && jasmine-node --test-dir ./dist/specs",
     "lint": "tslint -c .\\src\\tslint.json .\\src\\**\\*.ts",
     "tsc": "tsc",
     "typings": "typings"

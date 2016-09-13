@@ -14,7 +14,7 @@
          */
         private static _constructor = (() => {
             // Adjust the port the web server is listening on here
-            Serial.heartbeatInterval = 5000;
+            Serial.heartbeatInterval = 7500;
         })();
     }
     /**

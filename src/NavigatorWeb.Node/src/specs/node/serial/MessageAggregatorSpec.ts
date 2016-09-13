@@ -2,55 +2,75 @@
 /// <reference path="../../../../typings/index.d.ts" />
 
 import { MessageAggregator } from "./../../../node/serial/MessageAggregator";
+import { EventNames } from "./../../../node/config/EventNames";
 
 describe("MessageAggregator", function () {
-    it("Complete buffers are stored in output queue", function () {
-        let buffer1 = new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69, 69, 69]);
+    it("MessageAggregator raises event with assembled buffer data", function () {
+        let testBuffer = new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69, 69, 69]);
         let aggregator = new MessageAggregator();
 
-        aggregator.PushBuffer(buffer1);
-        let resultBuffer = aggregator.PopMessage();
+        let resultBuffer: Buffer = null;
+        aggregator.Events.on(
+            EventNames.MessageAggregator.BUFFER_ASSEMBLING_COMPLETED,
+            (data: Buffer) => {
+                resultBuffer = data;
+            }
+        );
+        aggregator.pushBuffer(testBuffer);
 
-        expect(resultBuffer.equals(new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69, 69, 69])));
+        waitsFor(() => {
+            return resultBuffer !== null;
+        }, "Message Aggregator should raise an event when assembling is completed", 5000);
+
+        runs(() => {
+            expect(resultBuffer.equals(new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69, 69, 69]))).toBeTruthy();
+        });
     });
 
-    it("Caches one buffer, appends part of a second buffer and stores composed message in output queue", function () {
+    it("Assembles result buffer from multiple buffers", function () {
         let buffer1 = new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69]);
         let buffer2 = new Buffer([69, 69, 0, 2, 0, 0, 0, 7]);
 
+        let resultBuffer: Buffer = null;
         let aggregator = new MessageAggregator();
-        aggregator.PushBuffer(buffer1);
-        aggregator.PushBuffer(buffer2);
-        let resultBuffer = aggregator.PopMessage();
+        aggregator.Events.on(
+            EventNames.MessageAggregator.BUFFER_ASSEMBLING_COMPLETED,
+            (data: Buffer) => {
+                resultBuffer = data;
+            }
+        );
+        aggregator.pushBuffer(buffer1);
+        aggregator.pushBuffer(buffer2);
 
-        expect(resultBuffer.entries())
-            .toEqual(new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69, 69, 69]).entries());
+        waitsFor(() => {
+            return resultBuffer !== null;
+        }, "Message Aggregator should raise an event when assembling is completed", 5000);
+
+        runs(() => {
+            expect(resultBuffer.equals(new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69, 69, 69]))).toBeTruthy();
+        });
     });
 
-    it("Caches rest of the buffer after extracting parts of it", function () {
-        let buffer1 = new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69]);
-        let buffer2 = new Buffer([69, 69, 0, 2, 0, 0, 0, 7]);
-
-        let aggregator = new MessageAggregator();
-        aggregator.PushBuffer(buffer1);
-        aggregator.PushBuffer(buffer2);
-        let resultBuffer = aggregator.CachedBuffer;
-
-        expect(resultBuffer.entries())
-            .toEqual(new Buffer([0, 2, 0, 0, 0, 7]).entries());
-    });
-
-    it("Extracts a complete message from the buffer and caches the rest", function () {
+    it("Caches incompletely assembled buffers", function () {
         let buffer1 = new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69, 69, 69, 0, 2, 0, 0, 0, 7]);
+
+        let resultBuffer: Buffer = null;
         let aggregator = new MessageAggregator();
+        aggregator.Events.on(
+            EventNames.MessageAggregator.BUFFER_ASSEMBLING_COMPLETED,
+            (data: Buffer) => {
+                resultBuffer = data;
+            }
+        );
+        aggregator.pushBuffer(buffer1);
 
-        aggregator.PushBuffer(buffer1);
-        let completeBuffer = aggregator.PopMessage();
-        let cachedBuffer = aggregator.CachedBuffer;
+        waitsFor(() => {
+            return (aggregator.CachedBuffer !== null)
+        }, "Message Aggregator should cache incompletely assembled buffers", 5000);
 
-        expect(completeBuffer.entries())
-            .toEqual(new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69, 69, 69]).entries());
-        expect(cachedBuffer.entries())
-            .toEqual(new Buffer([0, 2, 0, 0, 0, 7]).entries());
+        runs(() => {
+            expect(resultBuffer.equals(new Buffer([0, 1, 0, 0, 0, 5, 69, 69, 69, 69, 69]))).toBeTruthy();
+            expect(aggregator.CachedBuffer.equals(new Buffer([0, 2, 0, 0, 0, 7]))).toBeTruthy();
+        });
     });
 });

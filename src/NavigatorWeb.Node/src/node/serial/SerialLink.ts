@@ -6,7 +6,6 @@ import * as path from "path";
 
 import { ICanLog } from "./../interfaces/ICanLog";
 import { Messages } from "./../config/Messages";
-import { MessageAggregator } from "./MessageAggregator";
 import { Heartbeat } from "./Heartbeat";
 import { EventNames } from "./../config/EventNames";
 
@@ -20,7 +19,6 @@ export class SerialLink {
     private portName: string;
     private serialPort: SerialPort;
     private logger: ICanLog;
-    private messageAggregator: MessageAggregator;
     private heartbeat: Heartbeat;
     private isConnectedToDevice: boolean = false;
     private events: EventEmitter3.EventEmitter = new EventEmitter();
@@ -79,7 +77,6 @@ export class SerialLink {
 
         this.initializeSerialPort(baudRate, bufferSize);
         this.initializeHeartbeat(heartbeatInterval);
-        this.initializeMessageAggregator();
     }
 
     /**
@@ -116,19 +113,6 @@ export class SerialLink {
             }
         );
         this.logger.info("SerialLink heartbeat interval: " + heartbeatInterval + " ms");
-    }
-
-    /**
-     * Initializes the message aggregator
-     */
-    private initializeMessageAggregator() {
-        this.messageAggregator = new MessageAggregator();
-        this.messageAggregator.Events.on(
-            EventNames.MessageAggregator.BUFFER_ASSEMBLING_COMPLETED,
-            (data: Buffer) => {
-                this.messageAggregator_OnMessageCompleted(data);
-            }
-        );
     }
 
     //#endregion
@@ -240,7 +224,7 @@ export class SerialLink {
      * @param data Received data as NodeBuffer
      */
     private serialPort_OnDataReceived(data: Buffer) {
-        this.messageAggregator.PushBuffer(data);
+        this.events.emit(EventNames.SerialLink.BUFFER_RECEIVED, data);
     }
 
     /**
@@ -296,24 +280,6 @@ export class SerialLink {
         } catch (e) {
             this.logger.error((<Error>e));
             this.IsConnectedToDevice = false;
-        }
-    }
-
-    /**
-     * Callback is being called, when the message aggregator has
-     * assembled a complete message buffer.
-     *
-     * @param data Complete message buffer
-     */
-    private messageAggregator_OnMessageCompleted(data: Buffer) {
-        this.events.emit(EventNames.SerialLink.BUFFER_RECEIVED, data);
-
-        // When initiating a connection to the device, if all goes well,
-        // we receive a lot of status messages. The first message received,
-        // after triggering a connect should have the id 17 (ConfirmConnect).        
-        if (data[1] === 17) {
-            // So, now we can assume, that we're connected to the device!
-            this.IsConnectedToDevice = true;
         }
     }
 

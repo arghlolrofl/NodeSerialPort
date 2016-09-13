@@ -133,8 +133,13 @@
     <TypeScriptCompile Include="src\node\config\EventNames.ts" />
     <TypeScriptCompile Include="src\node\config\Messages.ts" />
     <TypeScriptCompile Include="src\node\interfaces\ICanLog.ts" />
+    <TypeScriptCompile Include="src\node\interfaces\IMessagePipeline.ts" />
+    <TypeScriptCompile Include="src\node\interfaces\IBufferInput.ts" />
+    <TypeScriptCompile Include="src\node\interfaces\IPipelineOutput.ts" />
+    <TypeScriptCompile Include="src\node\interfaces\IPipelineTask.ts" />
     <TypeScriptCompile Include="src\node\logging\Logger.ts" />
     <TypeScriptCompile Include="src\node\enums\Environment.ts" />
+    <TypeScriptCompile Include="src\node\MessagePipeline.ts" />
     <TypeScriptCompile Include="src\node\Program.ts" />
     <TypeScriptCompile Include="src\node\config\RouteManager.ts" />
     <TypeScriptCompile Include="src\node\serial\Heartbeat.ts" />

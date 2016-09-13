@@ -16,4 +16,13 @@
     export namespace WebSocketServer {
         export const CLIENT_REQUEST_RECEIVED = "client-request-received";
     }
+
+    export namespace PipelineInput {
+        export const INPUT_READY = "new-input-available";
+    }
+
+    export namespace MessagePipeline {
+        export const INPUT_READY_FOR_TASKS = "input-ready-for-task-execution";
+        export const READY_FOR_OUPUT = "ready-for-output";
+    }
 }
