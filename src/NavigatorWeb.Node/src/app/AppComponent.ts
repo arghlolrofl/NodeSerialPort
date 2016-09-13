@@ -54,12 +54,14 @@ export class AppComponent implements OnInit {
                 this.log(msg);
             }
         );
+
         this.webSocketClientService.Events.on(
             EventNames.WebSocketClientService.DATA_RECEIVED,
             (data: Int8Array) => {
                 this.processData(data);
             }
         );
+
         this.webSocketClientService.Events.on(
             EventNames.WebSocketClientService.DEVICE_CONNECTION_STATUS_CHANGE_RECEIVED,
             (isDeviceConnected: boolean) => {
@@ -73,6 +75,7 @@ export class AppComponent implements OnInit {
                 }
             }
         );
+
         this.webSocketClientService.Events.on(
             EventNames.WebSocketClientService.SERVER_ERROR_RECEIVED,
             (err: Error) => {
