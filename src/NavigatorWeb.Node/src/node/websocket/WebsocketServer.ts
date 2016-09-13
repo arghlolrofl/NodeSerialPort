@@ -18,7 +18,7 @@ export class WebSocketServer<T> implements IPipelineOutput<T> {
     private port: number;
     private events: EventEmitter3.EventEmitter = new EventEmitter();
 
-    private clientConnections: Array<SocketIO.Socket>;    
+    private clientConnections: Array<SocketIO.Socket>;
 
     //#region Properties
 
@@ -70,16 +70,16 @@ export class WebSocketServer<T> implements IPipelineOutput<T> {
         });
 
         this.webSocket = this.webSocket.listen(this.port);
-        console.log("[WEBSOCKET-SERVER] Listening on port: " + this.port);        
+        console.log("[WEBSOCKET-SERVER] Listening on port: " + this.port);
     }
-    
+
     /**
      * Sends a flag, if a device connection is established.
      *
      * @param msg Flag, if a device is connected via serial port.
      */
     public sendDeviceConnectionStatus(isConnected: boolean, socketClientId?: string): void {
-        if (socketClientId == null || typeof socketClientId === 'undefined')
+        if (socketClientId == null || typeof socketClientId === "undefined")
             return;
 
         this.webSocket.to("/#" + socketClientId).emit(Socket.Channels.CONNECTION_STATUS, isConnected);
@@ -91,7 +91,7 @@ export class WebSocketServer<T> implements IPipelineOutput<T> {
      * @param msg Text to send
      */
     public sendText(msg: string, socketClientId?: string): void {
-        if (socketClientId == null || typeof socketClientId === 'undefined')
+        if (socketClientId == null || typeof socketClientId === "undefined")
             return;
 
         this.webSocket.to("/#" + socketClientId).emit(Socket.Channels.MESSAGE, msg);
@@ -103,7 +103,7 @@ export class WebSocketServer<T> implements IPipelineOutput<T> {
      * @param {string} data Received buffer.
      */
     public sendData(data: T, socketClientId?: string): void {
-        if (socketClientId == null || typeof socketClientId === 'undefined')
+        if (socketClientId == null || typeof socketClientId === "undefined")
             return;
 
         this.webSocket.to("/#" + socketClientId).emit(Socket.Channels.DATA, data);
@@ -115,12 +115,12 @@ export class WebSocketServer<T> implements IPipelineOutput<T> {
      * @param err Error object
      */
     public sendError(err: Error, socketClientId?: string): void {
-        if (socketClientId == null || typeof socketClientId === 'undefined')
+        if (socketClientId == null || typeof socketClientId === "undefined")
             return;
 
         // sometimes, the same error is being thrown multiple times,
         // but we want to send it to the client only once.
-        if (typeof this.lastErrorSent !== 'undefined'
+        if (typeof this.lastErrorSent !== "undefined"
             && this.lastErrorSent.message === err.message
             && Date.now() < this.lastErrorTimestamp + this.repeatErrorThreshold) {
             return;

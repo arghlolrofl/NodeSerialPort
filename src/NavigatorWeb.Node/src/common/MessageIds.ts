@@ -480,7 +480,7 @@
         99: "Synchronization_VariantSettings",
 
         155: "End"
-    }
+    };
 
     export function GetStringById(id: number): string {
         return items[id];

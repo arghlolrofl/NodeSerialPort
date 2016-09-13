@@ -44,7 +44,7 @@ export class WebSocketClientService {
     public get ClientId(): string { return this.clientId; }
 
     //#endregion
-    
+
 
     /**
      * Establishes a web socket connection to a web socket server
@@ -81,7 +81,7 @@ export class WebSocketClientService {
 
             // ... subscribe to error channel
             this.socket.on(Socket.Channels.EXCEPTION, (err: Error) => {
-                this.events.emit(EventNames.WebSocketClientService.SERVER_ERROR_RECEIVED, err); 
+                this.events.emit(EventNames.WebSocketClientService.SERVER_ERROR_RECEIVED, err);
             });
         });
     }

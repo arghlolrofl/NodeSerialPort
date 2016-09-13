@@ -10,19 +10,18 @@ import { IBufferInput } from "./../interfaces/IBufferInput";
  * Completely assembled messages are being put into the OutgoingMessageCache.
  */
 export class MessageAggregator implements IBufferInput {
-    private outgoingMessageBuffer: Array<Buffer>;
+    //#region Private Members
+
     private incomingBufferCache: Array<Buffer>;
     private cachedBuffer: Buffer;
     private isLastMessageIncomplete: boolean;
     private events: EventEmitter3.EventEmitter = new EventEmitter();
     private registeredEvents: Array<string>;
 
+    //#endregion
+
     //#region Properties
 
-    /**
-     * Flag indicating, if there are complete messages available
-     */
-    public get HasMessages(): boolean { return this.outgoingMessageBuffer.length > 0; }
     /**
      * Gets the cached buffer
      */
@@ -34,16 +33,18 @@ export class MessageAggregator implements IBufferInput {
 
     //#endregion
 
+    //#region Initialization
+
     /**
      * Creates a new instance of the MessageAggregator class
      */
     constructor() {
         this.incomingBufferCache = new Array<Buffer>();
-        this.outgoingMessageBuffer = new Array<Buffer>();
         this.registeredEvents = new Array<string>();
         this.isLastMessageIncomplete = false;
     }
 
+    //#endregion
 
     /**
      * Adds a buffer to process queue.
@@ -52,25 +53,28 @@ export class MessageAggregator implements IBufferInput {
      */
     public pushBuffer(buffer: Buffer): void {
         this.incomingBufferCache.push(buffer);
-        this.ProcessIncomingBuffers();
+        this.processIncomingBuffers();
     }
 
     /**
-     * Returns the next completely assembled message buffer
+     * Interface method used to register custom events that are being
+     * raised, when an assembly is complete.
+     *
+     * @param eventName Name of the event to be emitted
      */
-    public popMessage() {
-        if (this.outgoingMessageBuffer.length > 0)
-            return this.outgoingMessageBuffer.shift();
-
-        return null;
+    public registerEventForNewInput(eventName: string): void {
+        this.registeredEvents.push(eventName);
     }
+
+
+    //#region Helpers
 
     /**
      * Assembles data from incoming buffers and composes complete
      * device messages (header [6 Bytes] + body) and puts them into the
      * output queue.
      */
-    private ProcessIncomingBuffers() {
+    private processIncomingBuffers() {
         while (this.incomingBufferCache.length > 0) {
             // shift the next incoming buffer from incoming buffer cache
             let incomingBuffer: Buffer = this.incomingBufferCache.shift();
@@ -78,7 +82,7 @@ export class MessageAggregator implements IBufferInput {
 
             // concat this buffer with cached one if it was incomplete
             if (this.isLastMessageIncomplete) {
-                incomingBuffer = this.ConcatBuffers(this.cachedBuffer, incomingBuffer);
+                incomingBuffer = this.concatBuffers(this.cachedBuffer, incomingBuffer);
                 // for now we will assume, that the concatenated buffer
                 // will contain a complete message
                 this.isLastMessageIncomplete = false;
@@ -121,7 +125,7 @@ export class MessageAggregator implements IBufferInput {
      * @param buffer1 First buffer to concatenate
      * @param buffer2 Second buffer to concatenate
      */
-    private ConcatBuffers(buffer1: Buffer, buffer2: Buffer): Buffer {
+    private concatBuffers(buffer1: Buffer, buffer2: Buffer): Buffer {
         let concatenatedBuffer = new Buffer(buffer1.length + buffer2.length);
 
         let elemCount = 0;
@@ -139,6 +143,11 @@ export class MessageAggregator implements IBufferInput {
         return concatenatedBuffer;
     }
 
+    /**
+     * Raises custom events, when an assembly is complete.
+     *
+     * @param data Completely assembled buffer that will be emitted
+     */
     private raiseNewInputEvent(data: Buffer): void {
         this.events.emit(EventNames.MessageAggregator.BUFFER_ASSEMBLING_COMPLETED, data);
         for (let i = 0; i < this.registeredEvents.length; i++) {
@@ -146,7 +155,5 @@ export class MessageAggregator implements IBufferInput {
         }
     }
 
-    public registerEventForNewInput(eventName: string): void {
-        this.registeredEvents.push(eventName);
-    }
+    //#endregion
 }

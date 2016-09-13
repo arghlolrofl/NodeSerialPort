@@ -1,4 +1,4 @@
-﻿/// <reference path="../../../node/serial/MessageAggregator.ts" /> 
+﻿/// <reference path="../../../node/serial/MessageAggregator.ts" />
 /// <reference path="../../../../typings/index.d.ts" />
 
 import { MessageAggregator } from "./../../../node/serial/MessageAggregator";
@@ -65,7 +65,7 @@ describe("MessageAggregator", function () {
         aggregator.pushBuffer(buffer1);
 
         waitsFor(() => {
-            return (aggregator.CachedBuffer !== null)
+            return (aggregator.CachedBuffer !== null);
         }, "Message Aggregator should cache incompletely assembled buffers", 5000);
 
         runs(() => {

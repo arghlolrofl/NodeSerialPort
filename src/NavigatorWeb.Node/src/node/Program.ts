@@ -84,7 +84,7 @@ export class Program {
         this.logger.log("Bootstrapping Node Express application ...");
 
         this.express = express();
-        
+
         this.initializeWebSocketServer();
         this.initializeSerialLink();
         this.initializeMessageAggregator();
@@ -205,7 +205,7 @@ export class Program {
         this.express.use(morgan("    :status    :method    :url"));
 
     }
-    
+
     /**
      * Registers static and API routes.
      */

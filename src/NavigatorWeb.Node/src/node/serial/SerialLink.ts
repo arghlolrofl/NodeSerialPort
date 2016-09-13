@@ -39,7 +39,7 @@ export class SerialLink {
      * Setter for the device connection status
      */
     public set IsConnectedToDevice(val: boolean) {
-        if (this.isConnectedToDevice != val) {
+        if (this.isConnectedToDevice !== val) {
             this.logger.log("Device connection status changed: " + val);
             this.isConnectedToDevice = val;
             this.events.emit(EventNames.SerialLink.DEVICE_CONNECTION_STATUS_CHANGED, this.isConnectedToDevice);
@@ -124,7 +124,7 @@ export class SerialLink {
      * if it was successfull.
      */
     public Open(): void {
-        this.serialPort.open(this.serialPort_OnOpen.bind(this));        
+        this.serialPort.open(this.serialPort_OnOpen.bind(this));
     }
 
     /**
@@ -194,7 +194,7 @@ export class SerialLink {
     private checkDeviceConnection(): void {
         if (!this.IsConnectedToDevice) {
             this.Events.emit(EventNames.SerialLink.CONNECTION_ERROR_OCCURED, new Error("Device is not responding!"));
-            this.Events.emit(EventNames.SerialLink.DEVICE_CONNECTION_STATUS_CHANGED, false);            
+            this.Events.emit(EventNames.SerialLink.DEVICE_CONNECTION_STATUS_CHANGED, false);
         }
     }
 
@@ -236,7 +236,7 @@ export class SerialLink {
     private serialPort_OnDisconnected(error: any): void {
         this.IsConnectedToDevice = false;
         this.logger.log("SerialPort_OnDisconnected");
-        if (typeof error !== 'undefined')
+        if (typeof error !== "undefined")
             this.logger.error(error);
     }
 
@@ -251,11 +251,11 @@ export class SerialLink {
 
     /**
      * Callback is called with an error object whenever there is an error.
-     * 
+     *
      * @param error Error object
      */
     private serialPort_OnError(error: Error): void {
-        this.logger.log("SerialPort_OnError");        
+        this.logger.log("SerialPort_OnError");
         this.logger.log(" > Serial Port Status: " + this.serialPort.isOpen());
 
         if (!this.serialPort.isOpen()) {

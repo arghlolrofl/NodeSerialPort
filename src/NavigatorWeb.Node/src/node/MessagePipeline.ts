@@ -31,10 +31,11 @@ export class MessagePipeline<T> implements IMessagePipeline<T> {
     public get Output(): IPipelineOutput<T> { return this.output; }
     /**
      * Getter for the list of registered tasks
-     */ 
+     */
     public get Tasks(): Array<IPipelineTask> { return this.tasks; }
 
     //#endregion
+
 
     //#region Initialization
 
@@ -51,7 +52,7 @@ export class MessagePipeline<T> implements IMessagePipeline<T> {
 
         this.input = receiver;
         this.output = sender;
-        
+
         this.input.registerEventForNewInput(EventNames.PipelineInput.INPUT_READY);
         this.input.Events.on(
             EventNames.PipelineInput.INPUT_READY,

@@ -79,7 +79,7 @@ export class AppComponent implements OnInit {
                 this.processError(err);
             }
         );
-        
+
         this.log("Connecting to WebSocket server ...");
         this.webSocketClientService.connect();
     }
@@ -125,7 +125,7 @@ export class AppComponent implements OnInit {
      *
      * @param message Message to log.
      */
-    private log(message: string) {        
+    private log(message: string) {
         this.logText += message + "\r\n";
 
         let logbox = $(".log-window")[0];
