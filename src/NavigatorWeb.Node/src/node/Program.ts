@@ -63,7 +63,7 @@ export class Program {
 
     /**
      * Creates a new instance of the Program class.
-     * 
+     *
      * @param rootPath The root path of the node project
      */
     constructor(rootPath: string) {
@@ -96,6 +96,7 @@ export class Program {
         // that 'input'- and 'output'-instances are initialized.
         this.messagePipeline = new MessagePipeline(this.messageAggregator, this.wsServer);
 
+        // now we can start the web serber itself
         this.logger.log("Bootstrapped application, starting web server ...");
         this.webServer = this.express.listen(this.express.get("port"), () => {
             console.log("Express server listening on port " + this.webServer.address().port);
@@ -197,7 +198,7 @@ export class Program {
         this.express.set("port", Configuration.WebServer.Port);
 
         this.logger.log("Initializing request logger ...");
-        // uncomment the following 2 lines to log to a file 
+        // uncomment the following 2 lines to log to a file
         // (remember to comment in the line below then)
         //
         // let accessLogStream = fs.createWriteStream("logs/access.log", { flags: "a" });
@@ -283,7 +284,7 @@ export class Program {
     private messageAggregator_OnMessageCompleted(data: Buffer) {
         // When initiating a connection to the device, if all goes well,
         // we receive a lot of status messages. The first message received,
-        // after triggering a connect should have the id 17 (ConfirmConnect).        
+        // after triggering a connect should have the id 17 (ConfirmConnect).
         if (data[1] === 17) {
             // So, now we can assume, that we're connected to the device!
             this.serialLink.IsConnectedToDevice = true;
