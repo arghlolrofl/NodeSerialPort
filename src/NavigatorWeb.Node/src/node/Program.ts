@@ -96,6 +96,7 @@ export class Program {
         // that 'input'- and 'output'-instances are initialized.
         this.messagePipeline = new MessagePipeline(this.messageAggregator, this.wsServer);
 
+        // now we can start the web serber itself
         this.logger.log("Bootstrapped application, starting web server ...");
         this.webServer = this.express.listen(this.express.get("port"), () => {
             console.log("Express server listening on port " + this.webServer.address().port);
