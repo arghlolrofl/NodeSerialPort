@@ -166,7 +166,6 @@
     <TypeScriptCompile Include="src\node\Program.ts" />
     <TypeScriptCompile Include="src\node\config\RouteManager.ts" />
     <TypeScriptCompile Include="src\node\serial\Heartbeat.ts" />
-    <TypeScriptCompile Include="src\node\websocket\WebsocketClient.ts" />
     <TypeScriptCompile Include="src\node\websocket\WebsocketServer.ts" />
     <TypeScriptCompile Include="src\specs\node\serial\MessageAggregatorSpec.ts" />
     <TypeScriptCompile Include="typings\index.d.ts" />

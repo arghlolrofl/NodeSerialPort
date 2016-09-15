@@ -50,8 +50,7 @@ export class RouteManager {
         this.AddStaticRoute("/public");
         this.AddStaticRoute("/dist/app", "/app");
         this.AddStaticRoute("/dist/common", "/common");
-        this.AddStaticRoute("/node_modules/@angular", "/@angular");
-        this.AddStaticRoute("/node_modules/rxjs", "/rxjs");
+        this.AddStaticRoute("/node_modules", "/node_modules");
         this.AddStaticRoute("/node_modules/eventemitter3", "/eventemitter3");
 
 
