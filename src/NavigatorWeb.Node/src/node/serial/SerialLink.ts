@@ -72,7 +72,7 @@ export class SerialLink {
         bufferSize?: number
     ) {
         this.logger = logger;
-        this.logger.log("Creating SerialLink ...");
+        this.logger.log("[SERIAL-LINK] Creating SerialLink ...");
         this.portName = portName;
 
         this.initializeSerialPort(baudRate, bufferSize);
@@ -86,10 +86,11 @@ export class SerialLink {
      * @param bufferSize Desired buffer size for incoming data
      */
     private initializeSerialPort(baudRate: number, bufferSize: number) {
-        this.logger.log("Creating serial link to port '" + this.portName + "' with baud rate: " + baudRate);
+        this.logger.log("[SERIAL-LINK] Port: " + this.portName);
+        this.logger.log("[SERIAL-LINK] Baud Rate: " + baudRate);
 
         let buffSize = bufferSize || this.readBufferSize;
-        this.logger.info("SerialLink read buffer size: " + buffSize);
+        this.logger.info("[SERIAL-LINK] Read buffer size: " + buffSize);
 
         this.serialPort = new SerialPort(this.portName, {
             baudRate: baudRate,
@@ -112,7 +113,7 @@ export class SerialLink {
                 this.heartbeat_OnIntervalElapsed();
             }
         );
-        this.logger.info("SerialLink heartbeat interval: " + heartbeatInterval + " ms");
+        this.logger.info("[SERIAL-LINK] Heartbeat interval: " + heartbeatInterval + " ms");
     }
 
     //#endregion
@@ -124,6 +125,7 @@ export class SerialLink {
      * if it was successfull.
      */
     public Open(): void {
+        this.logger.log("[SERIAL-LINK] Opening serial port");
         this.serialPort.open(this.serialPort_OnOpen.bind(this));
     }
 
