@@ -3,29 +3,29 @@
     export class FPDate
     {
         //#region members
-        private m_Year: FP.NavigatorWeb.Common.Number16Bit;
-        private m_Month: FP.NavigatorWeb.Common.Number16Bit;
-        private m_Day: FP.NavigatorWeb.Common.Number16Bit;
+        private m_Year: UNumber16Bit;
+        private m_Month: UNumber16Bit;
+        private m_Day: UNumber16Bit;
         //#endregion
 
         //#region properties 
-        get Year(): FP.NavigatorWeb.Common.Number16Bit { return this.m_Year; }
-        set Year(value: FP.NavigatorWeb.Common.Number16Bit) { this.m_Year = value; }
+        get Year(): UNumber16Bit { return this.m_Year; }
+        set Year(value: UNumber16Bit) { this.m_Year = value; }
 
-        get Month(): FP.NavigatorWeb.Common.Number16Bit { return this.m_Month; }
-        set Month(value: FP.NavigatorWeb.Common.Number16Bit) { this.m_Month = value; }
+        get Month(): UNumber16Bit { return this.m_Month; }
+        set Month(value: UNumber16Bit) { this.m_Month = value; }
 
-        get Day(): FP.NavigatorWeb.Common.Number16Bit { return this.m_Day; }
-        set Day(value: FP.NavigatorWeb.Common.Number16Bit) { this.m_Day = value; }
+        get Day(): UNumber16Bit { return this.m_Day; }
+        set Day(value: UNumber16Bit) { this.m_Day = value; }
         //#endregion
 
         //#region constructor
         constructor(date?: Date)
         {
             if (null != date) {
-                this.m_Year = new FP.NavigatorWeb.Common.Number16Bit(date.getFullYear());
-                this.Month = new FP.NavigatorWeb.Common.Number16Bit(date.getMonth());
-                this.Day = new FP.NavigatorWeb.Common.Number16Bit(date.getDate());
+                this.m_Year = new UNumber16Bit(date.getFullYear());
+                this.Month = new UNumber16Bit(date.getMonth());
+                this.Day = new UNumber16Bit(date.getDate());
             }
         }
         //#endregion
