@@ -49,15 +49,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="public\lib\jquery-v3.1.0.min.js" />
-    <Compile Include="public\lib\Reflect.js" />
-    <Compile Include="public\lib\shim.min.js" />
     <Compile Include="public\lib\socket.io-client.min.js" />
-    <Compile Include="public\lib\system.src.js" />
-    <Compile Include="public\lib\zone.js" />
     <Compile Include="public\systemjs.config.js" />
     <Compile Include="src\node\routes\ThingRouteCollection.ts" />
     <Compile Include="bin\www" />
-    <Content Include=".gitignore" />
     <Content Include="package.json" />
     <Content Include="public\img\excelscale-thumb.png" />
     <Content Include="public\img\scale.png" />

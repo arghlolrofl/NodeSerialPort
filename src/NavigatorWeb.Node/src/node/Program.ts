@@ -238,7 +238,7 @@ export class Program {
             try {
                 this.express.set("port", Configuration.WebServer.Port);
 
-                this.logger.log("Initializing request logger ...");
+                this.logger.log("[MAIN] Initializing request logger");
                 // uncomment the following 2 lines to log to a file
                 // (remember to comment in the line below then)
                 //
@@ -295,7 +295,7 @@ export class Program {
                 this.messagePipeline.setClientId(null);
                 break;
             default:
-                this.logger.log("Invalid request received: " + request);
+                this.logger.log("[MAIN] Invalid request received: " + request);
                 this.serialLink_OnError(new Error("Invalid request: " + request));
                 break;
         }
@@ -307,7 +307,7 @@ export class Program {
      * @param error
      */
     private serialLink_OnError(error: Error) {
-        this.logger.log("Informing client '" + this.connectedClientId + "' about error: " + error.message);
+        this.logger.log("[MAIN] Informing client '" + this.connectedClientId + "' about error: " + error.message);
         this.wsServer.sendError(error, this.connectedClientId);
     }
 

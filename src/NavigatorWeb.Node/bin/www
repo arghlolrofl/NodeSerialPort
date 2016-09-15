@@ -1,0 +1,16 @@
+﻿#!/usr/bin/env node
+
+var path = require("path");
+var fs = require("fs");
+require("reflect-metadata");
+
+var rootPath = path.join(__dirname, "../");
+
+if (typeof "string".padRight === 'undefined') {
+	String.prototype.padRight = function(l,c) {
+		return this+Array(l-this.length+1).join(c||" ");
+	}
+}
+
+var nodeModule = require("./../dist/node/Program");
+(new nodeModule.Program(rootPath)).bootstrap();

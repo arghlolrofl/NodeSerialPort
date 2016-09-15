@@ -45,7 +45,7 @@ export class RouteManager {
     //#region Public Methods
 
     public ApplyRoutes(): express.Application {
-        this.logger.log("Configuring routes ...");
+        this.logger.log("[ROUTE-MANAGER] Configuring routes ...");
 
         this.AddStaticRoute("/public");
         this.AddStaticRoute("/dist/app", "/app");
@@ -75,7 +75,7 @@ export class RouteManager {
         // if there is no alias, we can assume that this is our wwwroot
         if (typeof alias === "undefined") {
             this.app.use(express.static(absolutePath));
-            this.logger.info(" > / -> " + absolutePath);
+            this.logger.info(" > " + "/" + " -> " + absolutePath);
         } else {
             this.app.use(alias, express.static(absolutePath));
             this.logger.info(" > " + alias + " -> " + absolutePath);
