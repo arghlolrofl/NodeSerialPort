@@ -53,8 +53,8 @@ export class WebSocketClientService {
         console.log("Connecting to web socket server ...");
 
         // connect to server ...
-        this.socket = io("http://10.34.2.110:55667");
-        // ... and ...        
+        this.socket = io("http://10.34.2.59:55667");
+        // ... and ...
         this.socket.on("connect", () => {
             // ... subscribe to id exchange channel
             this.socket.on(Socket.Channels.ID_EXCHANGE, (id: string) => {

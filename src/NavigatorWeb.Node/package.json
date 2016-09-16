@@ -46,5 +46,6 @@
   },
   "devDependencies": {
     "jasmine": "^2.5.0"
-  }
+  },
+  "target_arch": "ARM"
 }

@@ -70,4 +70,14 @@ Global
 		{914BF994-0F90-4D7A-B48B-2DA153A1C9D3} = {24044298-E5A2-4C20-8C37-01AF805C747C}
 		{11526F41-3D41-4C91-84CE-CD0E42FB294E} = {0700DE98-5F1B-424D-9630-AC224A3E50E5}
 	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://tes-irmischer:8080/tfs/navigator
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = NavigatorWeb.Node\\NavigatorWeb.njsproj
+		SccProjectTopLevelParentUniqueName1 = NavigatorWeb.sln
+		SccProjectName1 = NavigatorWeb.Node
+		SccLocalPath1 = NavigatorWeb.Node
+	EndGlobalSection
 EndGlobal

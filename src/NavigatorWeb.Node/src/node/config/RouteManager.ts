@@ -75,10 +75,10 @@ export class RouteManager {
         // if there is no alias, we can assume that this is our wwwroot
         if (typeof alias === "undefined") {
             this.app.use(express.static(absolutePath));
-            this.logger.info(" > " + "/" + " -> " + absolutePath);
+            this.logger.info(" > " + this.padRight("/", 20, " ") + " -> " + absolutePath);
         } else {
             this.app.use(alias, express.static(absolutePath));
-            this.logger.info(" > " + alias + " -> " + absolutePath);
+            this.logger.info(" > " + this.padRight(alias, 20, " ") + " -> " + absolutePath);
         }
     }
 
@@ -92,4 +92,15 @@ export class RouteManager {
     }
 
     //#endregion
+
+    private padRight(s: string, n: number, c?: string): string {
+        if (!s || !c || s.length >= n) {
+            return s;
+        }
+        var max = (n - s.length) / c.length;
+        for (var i = 0; i < max; i++) {
+            s += c;
+        }
+        return s;
+    }
 }

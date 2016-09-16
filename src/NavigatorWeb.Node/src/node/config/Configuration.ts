@@ -103,7 +103,7 @@
          */
         private static _constructor = (() => {
             WebSocketServer.port = 55667;
-            WebSocketServer.host = "10.34.2.110";
+            WebSocketServer.host = "10.34.2.59";
         })();
     }
 }

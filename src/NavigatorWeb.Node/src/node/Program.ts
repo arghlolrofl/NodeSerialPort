@@ -68,6 +68,7 @@ export class Program {
      * @param rootPath The root path of the node project
      */
     constructor(rootPath: string) {
+        console.log("Initializing Program ...");
         this.initializeEnvironment();
 
         this.logger = new Logger(Program.Environment);

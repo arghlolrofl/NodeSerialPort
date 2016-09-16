@@ -17,7 +17,7 @@ export class SerialLink {
 
     private readBufferSize: number = 65536;
     private portName: string;
-    private serialPort: SerialPort;
+    private serialPort: any;
     private logger: ICanLog;
     private heartbeat: Heartbeat;
     private isConnectedToDevice: boolean = false;
@@ -182,8 +182,8 @@ export class SerialLink {
      * must be connected to the host to be listed here.
      */
     public FetchPortInfo(): void {
-        SerialPort.list((err, ports) => {
-            ports.forEach((port) => {
+        SerialPort.list((err: any, ports: any) => {
+            ports.forEach((port: any) => {
                 if (port.comName === this.portName) {
                     this.logger.log("--- PORT [" + port.comName + "] ---");
                     this.logger.log("    " + port.manufacturer);
@@ -216,7 +216,7 @@ export class SerialLink {
 
         this.FetchPortInfo();
 
-        this.logger.log("Serial port opened and callbacks registered ...");
+        this.logger.log("[SERIAL-LINK] Serial port opened and callbacks registered ...");
     }
 
     /**
