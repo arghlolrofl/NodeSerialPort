@@ -4,7 +4,7 @@ import * as express from "express";
 import * as path from "path";
 
 import { ThingRouteCollection } from "./../routes/ThingRouteCollection";
-import { ICanLog } from "./../interfaces/IcanLog";
+import { ICanLog } from "./../interfaces/ICanLog";
 
 /**
  * Configuration manager for setting desired routes in

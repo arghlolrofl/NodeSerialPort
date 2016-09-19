@@ -59,12 +59,9 @@
     <Content Include="public\index.html" />
     <Content Include="public\css\styles.css" />
     <Content Include="public\views\AppComponent.html" />
-    <Content Include="src\node\serial\arm\serialport.node" />
     <Content Include="src\node\serial\MessageAggregator.ts" />
     <Content Include="src\node\serial\SerialLink.ts" />
     <Content Include="JasmineNodeTestAdapter.json" />
-    <Content Include="src\node\serial\x64\serialport.node" />
-    <Content Include="src\node\serial\x86\serialport.node" />
     <Content Include="src\tsconfig.json" />
     <Content Include="src\tslint.json" />
     <Content Include="typings.json" />
@@ -90,9 +87,6 @@
     <Folder Include="src\node\enums\" />
     <Folder Include="src\node\logging\" />
     <Folder Include="src\node\serial\" />
-    <Folder Include="src\node\serial\arm\" />
-    <Folder Include="src\node\serial\x64\" />
-    <Folder Include="src\node\serial\x86\" />
     <Folder Include="src\node\websocket\" />
     <Folder Include="src\node\routes\" />
     <Folder Include="src\" />

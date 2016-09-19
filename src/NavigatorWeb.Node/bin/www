@@ -9,6 +9,5 @@ require("reflect-metadata");
 
 var rootPath = path.join(__dirname, "../");
 
-var nodeModule = require("./../dist/node/program");
-console.log("Require program completed");
+var nodeModule = require("./../dist/node/Program");
 (new nodeModule.Program(rootPath)).bootstrap();

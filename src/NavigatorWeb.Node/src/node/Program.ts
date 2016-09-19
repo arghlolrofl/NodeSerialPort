@@ -176,7 +176,7 @@ export class Program {
             try {
                 this.serialLink = new SerialLink(
                     this.logger,
-                    "COM7",
+                    "/dev/ttyACM0",
                     115200,
                     Configuration.Serial.HeartbeatInterval
                 );

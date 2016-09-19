@@ -1,5 +1,5 @@
 ﻿import { Environment } from "./../enums/Environment";
-import { ICanLog } from "./../interfaces/IcanLog";
+import { ICanLog } from "./../interfaces/ICanLog";
 
 /**
  * Logger class
