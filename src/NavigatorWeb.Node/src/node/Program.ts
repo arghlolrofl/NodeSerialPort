@@ -176,8 +176,8 @@ export class Program {
             try {
                 this.serialLink = new SerialLink(
                     this.logger,
-                    "/dev/ttyACM0",
-                    115200,
+                    Configuration.Serial.PortName,
+                    Configuration.Serial.BaudRate,
                     Configuration.Serial.HeartbeatInterval
                 );
 

@@ -9,12 +9,35 @@
          */
         public static get HeartbeatInterval(): number { return Serial.heartbeatInterval; }
 
+        private static portName: string;
+        /**
+         * Port name of the serial port to connect to, e.g.: "COM7" or "/dev/ttyACM0"
+         */
+        public static get PortName(): string { return Serial.portName; }
+
+        private static baudRate: number;
+        /**
+         * Desired baud rate for the serial connection
+         */
+        public static get BaudRate(): number { return Serial.baudRate; }
+
         /**
          * Static constructor
          */
         private static _constructor = (() => {
-            // Adjust the port the web server is listening on here
             Serial.heartbeatInterval = 7500;
+            Serial.baudRate = 115200;
+
+            // For now, we will check the architecture to determine the serial port name
+            if (process.arch === "arm") {
+                // If running on arm architecture, we can assume for now, that we
+                // are running on linux (raspbian).
+                Serial.portName = "/dev/ttyACM0";
+            } else {
+                // If not running on arm, we will assume, that we are running on
+                // the dev machine (windows)
+                Serial.portName = "COM7";
+            }
         })();
     }
     /**
@@ -33,45 +56,6 @@
         private static _constructor = (() => {
             // Adjust the port the web server is listening on here
             WebServer.port = 3000;
-        })();
-    }
-
-    /**
-     * WebSocket client connection settings
-     */
-    export class WebSocketClient {
-        private static port: number;
-        /**
-         * WebSocket client port
-         */
-        public static get Port(): number { return WebSocketClient.port; }
-
-        private static path: string;
-        /**
-         * WebSocket client url path
-         */
-        public static get Path(): string { return WebSocketClient.path; }
-
-        private static host: string;
-        /**
-         * WebSocket client host
-         */
-        public static get Host(): string { return WebSocketClient.host; }
-
-        /**
-         * WebSocketClient url
-         */
-        public static get Url(): string {
-            return "http://" + WebSocketClient.host + ":" + WebSocketClient.port + "/" + WebSocketClient.path;
-        }
-
-        /**
-         * Static constructor
-         */
-        private static _constructor = (() => {
-            WebSocketClient.port = 55666;
-            WebSocketClient.path = "scale";
-            WebSocketClient.host = "10.34.2.110";
         })();
     }
 
